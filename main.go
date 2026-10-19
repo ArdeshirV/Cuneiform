@@ -2,10 +2,12 @@ package main
 
 import (
 	_ "embed"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"time"
 	"unicode"
@@ -18,6 +20,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"golang.org/x/image/font/sfnt"
 )
 
 const (
@@ -75,7 +78,7 @@ func main() {
 	}
 	languageSelect.OnChanged = func(name string) {
 		for _, lang := range languages {
-			if lang.name == name {
+			if languageOptionName(lang) == name {
 				keyboard.SetList(lang, e.text)
 				break
 			}
@@ -88,10 +91,10 @@ func main() {
 	fontButton := widget.NewButton("Font", e.showFontDialog)
 	settingsButton := widget.NewButton("Settings", e.showSettingsDialog)
 	aboutButton := widget.NewButton("About", e.showAbout)
-	exitButton := widget.NewButton("Exit", application.Quit)
+	exitButton := widget.NewButton("Exit", e.requestClose)
 	top := container.NewVBox(
 		container.NewBorder(nil, nil,
-			container.NewHBox(openButton, saveButton, saveAsButton, rightToLeft, fontButton, settingsButton, aboutButton),
+			container.NewHBox(openButton, saveButton, saveAsButton, fontButton, settingsButton, aboutButton, rightToLeft),
 			exitButton, nil),
 		container.NewBorder(nil, nil, widget.NewLabel("Language:"), nil, languageSelect),
 	)
@@ -104,6 +107,7 @@ func main() {
 		preferences.SetFloat("split_offset", content.Offset)
 		close(stopSavingSplit)
 	})
+	window.SetCloseIntercept(e.requestClose)
 	go persistSplitOffset(content, preferences, stopSavingSplit)
 	e.updateStatus()
 	window.ShowAndRun()
@@ -112,7 +116,7 @@ func main() {
 func languageNames() []string {
 	names := make([]string, len(languages))
 	for i, lang := range languages {
-		names[i] = lang.name
+		names[i] = languageOptionName(lang)
 	}
 	return names
 }
@@ -213,39 +217,68 @@ func (e *editor) open() {
 }
 
 func (e *editor) save() {
+	e.saveWithCompletion(nil)
+}
+
+func (e *editor) saveWithCompletion(completion func(bool)) {
 	if e.uri == nil {
-		e.saveAs()
+		e.saveAsWithCompletion(completion)
 		return
 	}
 	writer, err := storage.SaveFileToURI(e.uri)
 	if err != nil {
 		dialog.ShowError(err, e.window)
+		if completion != nil {
+			completion(false)
+		}
 		return
 	}
 	if err := writeDocument(writer, e.text.Text, e.encoding); err != nil {
 		dialog.ShowError(err, e.window)
+		if completion != nil {
+			completion(false)
+		}
 		return
 	}
 	e.dirty = false
 	e.updateStatus()
+	if completion != nil {
+		completion(true)
+	}
 }
 
 func (e *editor) saveAs() {
+	e.saveAsWithCompletion(nil)
+}
+
+func (e *editor) saveAsWithCompletion(completion func(bool)) {
 	saveDialog := dialog.NewFileSave(func(writer fyne.URIWriteCloser, err error) {
 		if err != nil {
 			dialog.ShowError(err, e.window)
+			if completion != nil {
+				completion(false)
+			}
 			return
 		}
 		if writer == nil {
+			if completion != nil {
+				completion(false)
+			}
 			return
 		}
 		if err := writeDocument(writer, e.text.Text, e.encoding); err != nil {
 			dialog.ShowError(err, e.window)
+			if completion != nil {
+				completion(false)
+			}
 			return
 		}
 		e.uri = writer.URI()
 		e.dirty = false
 		e.updateStatus()
+		if completion != nil {
+			completion(true)
+		}
 	}, e.window)
 	saveDialog.SetFileName("untitled.txt")
 	saveDialog.Show()
@@ -279,7 +312,6 @@ func (e *editor) updateStatus() {
 
 func (e *editor) applySettings() {
 	preferences := e.application.Preferences()
-	fontChoice := preferences.StringWithFallback("font", bundledFontName)
 	scaleChoice := preferences.StringWithFallback("font_size", "Medium")
 	scale := float32(1)
 	switch scaleChoice {
@@ -288,9 +320,14 @@ func (e *editor) applySettings() {
 	case "Large":
 		scale = 1.15
 	}
-	var font fyne.Resource
-	if fontChoice == bundledFontName {
-		font = fyne.NewStaticResource("UnicodeScriptFallback.ttf", unicodeFontBytes)
+	font := fyne.Resource(fyne.NewStaticResource("UnicodeScriptFallback.ttf", unicodeFontBytes))
+	if encodedFont := preferences.String("custom_font_data"); encodedFont != "" {
+		fontData, err := base64.StdEncoding.DecodeString(encodedFont)
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("load saved font: %w", err), e.window)
+		} else {
+			font = fyne.NewStaticResource(preferences.StringWithFallback("custom_font_name", "custom-font.ttf"), fontData)
+		}
 	}
 	e.application.Settings().SetTheme(metallicTheme{
 		mode:      preferences.StringWithFallback("theme", "Metallic Dark"),
@@ -300,17 +337,35 @@ func (e *editor) applySettings() {
 }
 
 func (e *editor) showFontDialog() {
-	preferences := e.application.Preferences()
-	fontSelection := widget.NewSelect([]string{bundledFontName, systemFontName}, nil)
-	fontSelection.SetSelected(preferences.StringWithFallback("font", bundledFontName))
-	fontSelection.OnChanged = func(value string) {
-		preferences.SetString("font", value)
+	fontDialog := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
+		if err != nil {
+			dialog.ShowError(err, e.window)
+			return
+		}
+		if reader == nil {
+			return
+		}
+		defer reader.Close()
+		fontData, err := io.ReadAll(io.LimitReader(reader, 20<<20+1))
+		if err != nil {
+			dialog.ShowError(err, e.window)
+			return
+		}
+		if len(fontData) > 20<<20 {
+			dialog.ShowError(errors.New("font file exceeds the 20 MiB limit"), e.window)
+			return
+		}
+		if _, err := sfnt.Parse(fontData); err != nil {
+			dialog.ShowError(fmt.Errorf("invalid TrueType/OpenType font: %w", err), e.window)
+			return
+		}
+		preferences := e.application.Preferences()
+		preferences.SetString("custom_font_name", filepath.Base(reader.URI().Name()))
+		preferences.SetString("custom_font_data", base64.StdEncoding.EncodeToString(fontData))
 		e.applySettings()
-	}
-	dialog.NewCustom("Font", "Close", container.NewVBox(
-		widget.NewLabel("Font family"),
-		fontSelection,
-	), e.window).Show()
+	}, e.window)
+	fontDialog.SetFilter(storage.NewExtensionFileFilter([]string{".ttf", ".otf"}))
+	fontDialog.Show()
 }
 
 func (e *editor) showSettingsDialog() {
@@ -332,6 +387,12 @@ func (e *editor) showSettingsDialog() {
 		themeSelection,
 		widget.NewLabel("Text size"),
 		sizeSelection,
+		widget.NewButton("Use bundled font", func() {
+			preferences := e.application.Preferences()
+			preferences.SetString("custom_font_name", "")
+			preferences.SetString("custom_font_data", "")
+			e.applySettings()
+		}),
 	)
 	dialog.NewCustom("Settings", "Close", content, e.window).Show()
 }
@@ -343,16 +404,48 @@ func (e *editor) showAbout() {
 	projectURL := &url.URL{Scheme: "https", Host: "github.com", Path: "/ArdeshirV/cuneiform"}
 	appName := canvas.NewText("Cuneiform", theme.ForegroundColor())
 	appName.TextSize = theme.Size(theme.SizeNameText) * 3
-	nameAndVersion := container.NewVBox(
-		appName,
-		widget.NewLabel("Version: "+appVersion),
-	)
+	version := widget.NewLabel("Version: " + appVersion)
+	version.Move(fyne.NewPos(0, -theme.Size(theme.SizeNameText)))
 	details := container.NewVBox(
-		container.NewHBox(icon, nameAndVersion),
+		container.NewHBox(icon, appName, version),
 		widget.NewLabel("Copyright (c) 2026 @ArdeshirV, Licenced under GPLv3+"),
 		widget.NewHyperlink("https://github.com/ArdeshirV/cuneiform", projectURL),
 	)
 	dialog.NewCustom("About", "Close", details, e.window).Show()
+}
+
+func (e *editor) requestClose() {
+	if !e.dirty {
+		e.quit()
+		return
+	}
+
+	confirmation := dialog.NewCustomWithoutButtons(
+		"Unsaved changes",
+		widget.NewLabel("Do you want to save changes?"),
+		e.window,
+	)
+	confirmation.SetButtons([]fyne.CanvasObject{
+		widget.NewButton("Yes", func() {
+			confirmation.Hide()
+			e.saveWithCompletion(func(saved bool) {
+				if saved {
+					e.quit()
+				}
+			})
+		}),
+		widget.NewButton("No", func() {
+			confirmation.Hide()
+			e.quit()
+		}),
+		widget.NewButton("Cancel", confirmation.Hide),
+	})
+	confirmation.Show()
+}
+
+func (e *editor) quit() {
+	e.window.SetCloseIntercept(nil)
+	e.application.Quit()
 }
 
 func persistSplitOffset(split *container.Split, preferences fyne.Preferences, done <-chan struct{}) {

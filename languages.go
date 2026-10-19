@@ -47,6 +47,7 @@ var languages = []language{
 	{name: "Armenian", ranges: block(0x0530, 0x058F)},
 	{name: "Hebrew", ranges: block(0x0590, 0x05FF)},
 	{name: "Arabic", ranges: []runeRange{{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}}},
+	{name: "Persian", ranges: []runeRange{{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0xFB50, 0xFDFF}, {0xFE70, 0xFEFF}}},
 	{name: "Syriac", ranges: block(0x0700, 0x074F)},
 	{name: "Thaana", ranges: block(0x0780, 0x07BF)},
 	{name: "Devanagari", ranges: block(0x0900, 0x097F)},
@@ -134,6 +135,65 @@ func normalizeLanguageName(name string) string {
 	name = strings.ToLower(name)
 	name = strings.NewReplacer(" ", "", "-", "", "_", "", "'", "").Replace(name)
 	return name
+}
+
+func languageOptionName(lang language) string {
+	if sample, ok := languageSamples[lang.name]; ok {
+		return lang.name + " — " + sample
+	}
+	chars := charactersFor(lang)
+	sample := make([]rune, 0, 3)
+	for _, char := range chars {
+		if char == ' ' || unicode.Is(unicode.M, char) {
+			continue
+		}
+		sample = append(sample, char)
+		if len(sample) == 3 {
+			break
+		}
+	}
+	if len(sample) == 0 {
+		return lang.name
+	}
+	return lang.name + " — " + string(sample)
+}
+
+var languageSamples = map[string]string{
+	"Avesta":               "𐬀𐬵𐬎𐬭𐬀",
+	"Pahlavi":              "𐭯𐭠𐭫𐭥𐭩",
+	"Parthian":             "𐭀𐭓𐭔𐭀𐭊",
+	"Ancient Persian":      "𐎭𐎠𐎼𐎹𐎺𐎢𐏁",
+	"Sogdian":              "𐼰𐼰𐼰",
+	"Old Sogdian":          "𐼀𐼀𐼀",
+	"Manichaean":           "𐫀𐫁𐫂",
+	"Khwarezmian":          "𐾰𐾱𐾲",
+	"Old Uyghur":           "𐽰𐽱𐽲",
+	"Cuneiform":            "𒀀𒈾",
+	"Egyptian Hieroglyphs": "𓂀𓆣",
+	"Phoenician":           "𐤀𐤁𐤂",
+	"Ugaritic":             "𐎀𐎁𐎂",
+	"Linear B":             "𐀀𐀁𐀂",
+	"Old Italic":           "𐌀𐌁𐌂",
+	"Runic":                "ᚠᚢᚦᚨᚱᚲ",
+	"Gothic":               "𐌲𐌿𐍄𐌹𐍃",
+	"Greek":                "λόγος",
+	"Latin":                "salve",
+	"Armenian":             "Բարեւ",
+	"Hebrew":               "שלום",
+	"Arabic":               "سلام",
+	"Syriac":               "ܫܠܡܐ",
+	"Devanagari":           "नमस्ते",
+	"Bengali":              "বাংলা",
+	"Tamil":                "தமிழ்",
+	"Thai":                 "สวัสดี",
+	"Georgian":             "გამარჯობა",
+	"Ethiopic":             "ሰላም",
+	"Japanese Hiragana":    "こんにちは",
+	"Japanese Katakana":    "カタカナ",
+	"Chinese Han (CJK)":    "汉字",
+	"Hangul":               "한글",
+	"Persian":              "فارسی",
+	"N'Ko":                 "ߒߞߏ",
 }
 
 func charactersFor(lang language) []rune {

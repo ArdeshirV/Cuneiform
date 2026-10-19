@@ -29,6 +29,13 @@ type unicodeEditor struct {
 	scroll      *container.Scroll
 }
 
+func (e *unicodeEditor) scrollOffsetX() float32 {
+	if e.scroll == nil {
+		return 0
+	}
+	return e.scroll.Offset.X
+}
+
 type editAction struct {
 	position int
 	removed  string
@@ -246,15 +253,27 @@ func (e *unicodeEditor) Keyboard() mobile.KeyboardType {
 func (e *unicodeEditor) TypedShortcut(shortcut fyne.Shortcut) {
 	switch shortcut.(type) {
 	case *fyne.ShortcutCopy:
-		e.copySelection()
+		clipboard := fyne.CurrentApp().Clipboard()
+		if typed, ok := shortcut.(*fyne.ShortcutCopy); ok && typed.Clipboard != nil {
+			clipboard = typed.Clipboard
+		}
+		e.copySelectionTo(clipboard)
 	case *fyne.ShortcutCut:
-		e.copySelection()
+		clipboard := fyne.CurrentApp().Clipboard()
+		if typed, ok := shortcut.(*fyne.ShortcutCut); ok && typed.Clipboard != nil {
+			clipboard = typed.Clipboard
+		}
+		e.copySelectionTo(clipboard)
 		start, end := e.selection()
 		if start != end {
 			e.replaceRange(start, end, "")
 		}
 	case *fyne.ShortcutPaste:
-		e.replaceSelection(fyne.CurrentApp().Clipboard().Content())
+		clipboard := fyne.CurrentApp().Clipboard()
+		if typed, ok := shortcut.(*fyne.ShortcutPaste); ok && typed.Clipboard != nil {
+			clipboard = typed.Clipboard
+		}
+		e.replaceSelection(clipboard.Content())
 	case *fyne.ShortcutSelectAll:
 		e.anchor = 0
 		e.cursor = len([]rune(e.Text))
@@ -267,6 +286,9 @@ func (e *unicodeEditor) TypedShortcut(shortcut fyne.Shortcut) {
 }
 
 func (e *unicodeEditor) MouseDown(event *desktop.MouseEvent) {
+	if event.Button != desktop.MouseButtonPrimary {
+		return
+	}
 	e.focus()
 	e.moveCursor(e.cursorAt(event.Position), false)
 }
@@ -286,6 +308,35 @@ func (e *unicodeEditor) TouchDown(event *mobile.TouchEvent) {
 
 func (e *unicodeEditor) TouchUp(*mobile.TouchEvent)     {}
 func (e *unicodeEditor) TouchCancel(*mobile.TouchEvent) {}
+
+func (e *unicodeEditor) TappedSecondary(event *fyne.PointEvent) {
+	canvas := fyne.CurrentApp().Driver().CanvasForObject(e)
+	if canvas == nil {
+		return
+	}
+	menu := fyne.NewMenu("",
+		fyne.NewMenuItem("Cut", func() {
+			e.copySelectionTo(fyne.CurrentApp().Clipboard())
+			start, end := e.selection()
+			if start != end {
+				e.replaceRange(start, end, "")
+			}
+		}),
+		fyne.NewMenuItem("Copy", func() {
+			e.copySelectionTo(fyne.CurrentApp().Clipboard())
+		}),
+		fyne.NewMenuItem("Paste", func() {
+			e.replaceSelection(fyne.CurrentApp().Clipboard().Content())
+		}),
+		fyne.NewMenuItem("Select all", func() {
+			e.anchor = 0
+			e.cursor = len([]rune(e.Text))
+			e.Refresh()
+		}),
+	)
+	position := fyne.CurrentApp().Driver().AbsolutePositionForObject(e).Add(event.Position)
+	widget.NewPopUpMenu(menu, canvas).ShowAtPosition(position)
+}
 
 func (e *unicodeEditor) focus() {
 	canvas := fyne.CurrentApp().Driver().CanvasForObject(e)
@@ -317,7 +368,7 @@ func (e *unicodeEditor) cursorAt(position fyne.Position) int {
 		width := canvas.NewText(prefix, theme.Color(theme.ColorNameForeground)).MinSize().Width
 		point := width
 		if e.rightToLeft {
-			point = e.scrollWidth() - width
+			point = e.scrollWidth() + e.scrollOffsetX() - width
 		}
 		distance := absFloat32(point - x)
 		if bestDistance < 0 || distance < bestDistance {
@@ -424,9 +475,13 @@ func (e *unicodeEditor) redo() {
 }
 
 func (e *unicodeEditor) copySelection() {
+	e.copySelectionTo(fyne.CurrentApp().Clipboard())
+}
+
+func (e *unicodeEditor) copySelectionTo(clipboard fyne.Clipboard) {
 	start, end := e.selection()
 	if start != end {
-		fyne.CurrentApp().Clipboard().SetContent(string([]rune(e.Text)[start:end]))
+		clipboard.SetContent(string([]rune(e.Text)[start:end]))
 	}
 }
 
@@ -547,3 +602,4 @@ var _ desktop.Mouseable = (*unicodeEditor)(nil)
 var _ fyne.Draggable = (*unicodeEditor)(nil)
 var _ mobile.Keyboardable = (*unicodeEditor)(nil)
 var _ mobile.Touchable = (*unicodeEditor)(nil)
+var _ fyne.SecondaryTappable = (*unicodeEditor)(nil)
