@@ -67,7 +67,7 @@ func main() {
 	}
 
 	languageSelect := widget.NewSelect(languageNames(), nil)
-	languageSelect.SetSelected(languages[0].name)
+	languageSelect.SetSelected(languageOptionName(languages[0]))
 	keyboard := newKeyboard(languages[0], e.text)
 	rightToLeft := widget.NewCheck("Right to left", nil)
 	rightToLeft.SetChecked(application.Preferences().BoolWithFallback("right_to_left", true))
@@ -325,6 +325,8 @@ func (e *editor) applySettings() {
 		fontData, err := base64.StdEncoding.DecodeString(encodedFont)
 		if err != nil {
 			dialog.ShowError(fmt.Errorf("load saved font: %w", err), e.window)
+			preferences.SetString("custom_font_name", "")
+			preferences.SetString("custom_font_data", "")
 		} else {
 			font = fyne.NewStaticResource(preferences.StringWithFallback("custom_font_name", "custom-font.ttf"), fontData)
 		}
@@ -346,7 +348,7 @@ func (e *editor) showFontDialog() {
 			return
 		}
 		defer reader.Close()
-		fontData, err := io.ReadAll(io.LimitReader(reader, 20<<20+1))
+		fontData, err := io.ReadAll(io.LimitReader(reader, (20<<20)+1))
 		if err != nil {
 			dialog.ShowError(err, e.window)
 			return
@@ -404,10 +406,12 @@ func (e *editor) showAbout() {
 	projectURL := &url.URL{Scheme: "https", Host: "github.com", Path: "/ArdeshirV/cuneiform"}
 	appName := canvas.NewText("Cuneiform", theme.ForegroundColor())
 	appName.TextSize = theme.Size(theme.SizeNameText) * 3
-	version := widget.NewLabel("Version: " + appVersion)
-	version.Move(fyne.NewPos(0, -theme.Size(theme.SizeNameText)))
+	version := canvas.NewText("Version: "+appVersion, theme.ForegroundColor())
+	version.TextSize = theme.Size(theme.SizeNameCaptionText)
+	version.Move(fyne.NewPos(0, -theme.Size(theme.SizeNameCaptionText)/2))
+	versionHolder := container.NewWithoutLayout(version)
 	details := container.NewVBox(
-		container.NewHBox(icon, appName, version),
+		container.NewHBox(icon, appName, versionHolder),
 		widget.NewLabel("Copyright (c) 2026 @ArdeshirV, Licenced under GPLv3+"),
 		widget.NewHyperlink("https://github.com/ArdeshirV/cuneiform", projectURL),
 	)
