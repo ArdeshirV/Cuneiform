@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 	"unicode"
 )
@@ -33,4 +34,16 @@ func TestLanguagesIncludePriorityAndUnicodeScripts(t *testing.T) {
 		}
 	}
 	t.Fatal("Garay keyboard has no printable Garay characters")
+}
+
+func TestLanguageOptionsShowScriptSamples(t *testing.T) {
+	for _, lang := range languages {
+		option := languageOptionName(lang)
+		if !strings.Contains(option, " — ") {
+			t.Errorf("language option %q does not include a script sample", option)
+		}
+	}
+	if got := languageOptionName(languages[0]); got != "Avesta — 𐬀𐬵𐬎𐬭𐬀" {
+		t.Fatalf("Avesta option = %q", got)
+	}
 }

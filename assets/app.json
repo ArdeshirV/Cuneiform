@@ -1,0 +1,181 @@
+{
+  "application": {
+    "id": "org.ardeshirv.cuneiform",
+    "name": "Cuneiform",
+    "version": "1.0",
+    "icon": "Icon.png",
+    "project_url": "https://github.com/ArdeshirV/cuneiform",
+    "copyright": "Copyright (c) 2026 @ArdeshirV, Licenced under GPLv3+"
+  },
+  "strings": {
+    "placeholder": "Open or start a Unicode text document…",
+    "empty": "",
+    "right_to_left": "Right to left",
+    "open": "Open",
+    "save": "Save",
+    "save_as": "Save As",
+    "font": "Font",
+    "settings": "Settings",
+    "about": "About",
+    "exit": "Exit",
+    "language": "Language:",
+    "space_key": "␠",
+    "combining_circle": "◌",
+    "untitled_filename": "untitled.txt",
+    "untitled": "Untitled",
+    "dirty_marker": " •",
+    "status_format": "%s%s   |   %s   |   Unicode data: %s   |   %d code points",
+    "font_size_medium": "Medium",
+    "font_size_small": "Small",
+    "font_size_large": "Large",
+    "theme_dark": "Metallic Dark",
+    "theme_light": "Metallic Light",
+    "theme_system": "System",
+    "font_load_error": "load saved font: %w",
+    "font_file_too_large": "font file exceeds the %d MiB limit",
+    "font_file_invalid": "invalid TrueType/OpenType font: %w",
+    "project_url_invalid": "invalid project URL in app.json: %w",
+    "font_file_default_name": "custom-font.ttf",
+    "font_bundled_name": "UnicodeScriptFallback.ttf",
+    "font_bundled_button": "Use bundled font",
+    "font_settings_label": "Text size",
+    "theme_settings_label": "Theme",
+    "font_dialog_title": "Choose a font",
+    "font_extension_ttf": ".ttf",
+    "font_extension_otf": ".otf",
+    "settings_close": "Close",
+    "about_version": "Version: ",
+    "about_title": "Cuneiform",
+    "about_dialog_title": "About",
+    "close": "Close",
+    "save_changes_title": "Unsaved changes",
+    "save_changes_message": "Do you want to save changes?",
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "clipboard_cut": "Cut",
+    "clipboard_copy": "Copy",
+    "clipboard_paste": "Paste",
+    "clipboard_select_all": "Select all",
+    "phonetic_space": "space",
+    "phonetic_unknown_format": "%X",
+    "font_fallback_family": "Cuneiform Script Fallback",
+    "language_sample_format": "%s — %s",
+    "key_label_separator": " ",
+    "invalid_utf8_replacement": "�",
+    "selection_highlight": "#75B5D170",
+    "theme_variant_dark": "dark",
+    "theme_variant_light": "light",
+    "color_hex_prefix": "#",
+    "unicode_codepoint_prefix": "U+",
+    "theme_color_invalid": "invalid theme color %q: %w",
+    "theme_color_hex_digits": "expected %d hexadecimal digits"
+  },
+  "numbers": {
+    "keyboard_columns": 5,
+    "initial_window_width": 1000,
+    "initial_window_height": 760,
+    "default_editor_fraction": 0.3,
+    "default_font_file_limit_mib": 20,
+    "default_font_file_limit_bytes": 20971520,
+    "splitter_save_interval_millis": 250,
+    "font_scale_small": 0.85,
+    "font_scale_medium": 1.0,
+    "font_scale_large": 1.15,
+    "about_icon_size": 72,
+    "about_name_font_multiplier": 3,
+    "about_version_vertical_offset_factor": -0.5,
+    "editor_minimum_width": 100,
+    "editor_minimum_height_lines": 3,
+    "caret_width_multiplier": 2,
+    "line_height_fallback_factor": 1,
+    "color_hex_digits": 8,
+    "color_hex_base": 16,
+    "color_bits": 32,
+    "color_red_shift": 24,
+    "color_green_shift": 16,
+    "color_blue_shift": 8,
+    "numeric_base_hex": 16,
+    "unicode_scalar_bit_size": 32,
+    "splitter_min_offset": 0.0,
+    "splitter_max_offset": 1.0,
+    "rtl_default": 1,
+    "language_preview_characters": 3
+  },
+  "preferences": {
+    "font_size": "font_size",
+    "split_offset": "split_offset",
+    "right_to_left": "right_to_left",
+    "custom_font_name": "custom_font_name",
+    "custom_font_data": "custom_font_data",
+    "theme": "theme"
+  },
+  "theme_options": [
+    "Metallic Dark",
+    "Metallic Light",
+    "System"
+  ],
+  "font_size_options": [
+    "Small",
+    "Medium",
+    "Large"
+  ],
+  "theme_palettes": {
+    "Metallic Dark": {
+      "variant": "dark",
+      "background": "#20252AFF",
+      "input": "#15191DFF",
+      "button": "#384047FF",
+      "primary": "#75B5D1FF",
+      "foreground": "#E5E9ECFF",
+      "hover": "#4A555EFF"
+    },
+    "Metallic Light": {
+      "variant": "light",
+      "background": "#D8DCE0FF",
+      "input": "#F1F3F5FF",
+      "button": "#C1C8CEFF",
+      "primary": "#3F7591FF",
+      "foreground": "#192228FF"
+    },
+    "System": {
+      "variant": "system"
+    }
+  },
+  "rtl_scripts": [
+    "Arabic",
+    "Hebrew",
+    "Syriac",
+    "Thaana",
+    "Nko",
+    "Adlam"
+  ],
+  "excluded_unicode_scripts": [
+    "Common",
+    "Inherited"
+  ],
+  "language_name_replacements": [
+    [
+      "_",
+      " "
+    ]
+  ],
+  "language_normalization_replacements": [
+    [
+      " ",
+      ""
+    ],
+    [
+      "-",
+      ""
+    ],
+    [
+      "_",
+      ""
+    ],
+    [
+      "'",
+      ""
+    ]
+  ]
+}

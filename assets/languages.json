@@ -1,0 +1,702 @@
+{
+  "languages": [
+    {
+      "name": "Avesta",
+      "ranges": [
+        [
+          68352,
+          68415
+        ]
+      ],
+      "sample": "𐬀𐬵𐬎𐬭𐬀"
+    },
+    {
+      "name": "Pahlavi",
+      "ranges": [
+        [
+          68448,
+          68479
+        ],
+        [
+          68480,
+          68527
+        ]
+      ],
+      "sample": "𐭯𐭠𐭫𐭥𐭩"
+    },
+    {
+      "name": "Parthian",
+      "ranges": [
+        [
+          68416,
+          68447
+        ]
+      ],
+      "sample": "𐭀𐭓𐭔𐭀𐭊"
+    },
+    {
+      "name": "Ancient Persian",
+      "ranges": [
+        [
+          66464,
+          66527
+        ]
+      ],
+      "sample": "𐎭𐎠𐎼𐎹𐎺𐎢𐏁"
+    },
+    {
+      "name": "Sogdian",
+      "ranges": [
+        [
+          69424,
+          69487
+        ]
+      ],
+      "sample": "𐼰𐼰𐼰"
+    },
+    {
+      "name": "Old Sogdian",
+      "ranges": [
+        [
+          69376,
+          69423
+        ]
+      ],
+      "sample": "𐼀𐼀𐼀"
+    },
+    {
+      "name": "Manichaean",
+      "ranges": [
+        [
+          68288,
+          68351
+        ]
+      ],
+      "sample": "𐫀𐫁𐫂"
+    },
+    {
+      "name": "Khwarezmian",
+      "ranges": [
+        [
+          69552,
+          69599
+        ]
+      ],
+      "sample": "𐾰𐾱𐾲"
+    },
+    {
+      "name": "Old Uyghur",
+      "ranges": [
+        [
+          69488,
+          69551
+        ]
+      ],
+      "sample": "𐽰𐽱𐽲"
+    },
+    {
+      "name": "Cuneiform",
+      "ranges": [
+        [
+          73728,
+          74751
+        ]
+      ],
+      "sample": "𒀀𒈾"
+    },
+    {
+      "name": "Egyptian Hieroglyphs",
+      "ranges": [
+        [
+          77824,
+          78943
+        ]
+      ],
+      "sample": "𓂀𓆣"
+    },
+    {
+      "name": "Phoenician",
+      "ranges": [
+        [
+          67840,
+          67871
+        ]
+      ],
+      "sample": "𐤀𐤁𐤂"
+    },
+    {
+      "name": "Ugaritic",
+      "ranges": [
+        [
+          66432,
+          66463
+        ]
+      ],
+      "sample": "𐎀𐎁𐎂"
+    },
+    {
+      "name": "Linear B",
+      "ranges": [
+        [
+          65536,
+          65663
+        ]
+      ],
+      "sample": "𐀀𐀁𐀂"
+    },
+    {
+      "name": "Cypriot",
+      "ranges": [
+        [
+          67584,
+          67647
+        ]
+      ]
+    },
+    {
+      "name": "Old Italic",
+      "ranges": [
+        [
+          66304,
+          66351
+        ]
+      ],
+      "sample": "𐌀𐌁𐌂"
+    },
+    {
+      "name": "Runic",
+      "ranges": [
+        [
+          5792,
+          5887
+        ]
+      ],
+      "sample": "ᚠᚢᚦᚨᚱᚲ"
+    },
+    {
+      "name": "Gothic",
+      "ranges": [
+        [
+          66352,
+          66383
+        ]
+      ],
+      "sample": "𐌲𐌿𐍄𐌹𐍃"
+    },
+    {
+      "name": "Glagolitic",
+      "ranges": [
+        [
+          11264,
+          11359
+        ]
+      ]
+    },
+    {
+      "name": "Coptic",
+      "ranges": [
+        [
+          11392,
+          11519
+        ]
+      ]
+    },
+    {
+      "name": "Greek",
+      "ranges": [
+        [
+          880,
+          1023
+        ],
+        [
+          7936,
+          8191
+        ]
+      ],
+      "sample": "λόγος"
+    },
+    {
+      "name": "Latin",
+      "ranges": [
+        [
+          32,
+          591
+        ],
+        [
+          7680,
+          7935
+        ],
+        [
+          42784,
+          43007
+        ],
+        [
+          43824,
+          43887
+        ]
+      ],
+      "sample": "salve"
+    },
+    {
+      "name": "Armenian",
+      "ranges": [
+        [
+          1328,
+          1423
+        ]
+      ],
+      "sample": "Բարեւ"
+    },
+    {
+      "name": "Hebrew",
+      "ranges": [
+        [
+          1424,
+          1535
+        ]
+      ],
+      "sample": "שלום"
+    },
+    {
+      "name": "Arabic",
+      "ranges": [
+        [
+          1536,
+          1791
+        ],
+        [
+          1872,
+          1919
+        ],
+        [
+          2208,
+          2303
+        ]
+      ],
+      "sample": "سلام"
+    },
+    {
+      "name": "Persian",
+      "ranges": [
+        [
+          1536,
+          1791
+        ],
+        [
+          1872,
+          1919
+        ],
+        [
+          2208,
+          2303
+        ],
+        [
+          64336,
+          65023
+        ],
+        [
+          65136,
+          65279
+        ]
+      ],
+      "sample": "فارسی"
+    },
+    {
+      "name": "Syriac",
+      "ranges": [
+        [
+          1792,
+          1871
+        ]
+      ],
+      "sample": "ܫܠܡܐ"
+    },
+    {
+      "name": "Thaana",
+      "ranges": [
+        [
+          1920,
+          1983
+        ]
+      ]
+    },
+    {
+      "name": "Devanagari",
+      "ranges": [
+        [
+          2304,
+          2431
+        ]
+      ],
+      "sample": "नमस्ते"
+    },
+    {
+      "name": "Bengali",
+      "ranges": [
+        [
+          2432,
+          2559
+        ]
+      ],
+      "sample": "বাংলা"
+    },
+    {
+      "name": "Gurmukhi",
+      "ranges": [
+        [
+          2560,
+          2687
+        ]
+      ]
+    },
+    {
+      "name": "Gujarati",
+      "ranges": [
+        [
+          2688,
+          2815
+        ]
+      ]
+    },
+    {
+      "name": "Odia",
+      "ranges": [
+        [
+          2816,
+          2943
+        ]
+      ]
+    },
+    {
+      "name": "Tamil",
+      "ranges": [
+        [
+          2944,
+          3071
+        ]
+      ],
+      "sample": "தமிழ்"
+    },
+    {
+      "name": "Telugu",
+      "ranges": [
+        [
+          3072,
+          3199
+        ]
+      ]
+    },
+    {
+      "name": "Kannada",
+      "ranges": [
+        [
+          3200,
+          3327
+        ]
+      ]
+    },
+    {
+      "name": "Malayalam",
+      "ranges": [
+        [
+          3328,
+          3455
+        ]
+      ]
+    },
+    {
+      "name": "Sinhala",
+      "ranges": [
+        [
+          3456,
+          3583
+        ]
+      ]
+    },
+    {
+      "name": "Thai",
+      "ranges": [
+        [
+          3584,
+          3711
+        ]
+      ],
+      "sample": "สวัสดี"
+    },
+    {
+      "name": "Lao",
+      "ranges": [
+        [
+          3712,
+          3839
+        ]
+      ]
+    },
+    {
+      "name": "Tibetan",
+      "ranges": [
+        [
+          3840,
+          4095
+        ]
+      ]
+    },
+    {
+      "name": "Myanmar",
+      "ranges": [
+        [
+          4096,
+          4255
+        ]
+      ]
+    },
+    {
+      "name": "Georgian",
+      "ranges": [
+        [
+          4256,
+          4351
+        ]
+      ],
+      "sample": "გამარჯობა"
+    },
+    {
+      "name": "Ethiopic",
+      "ranges": [
+        [
+          4608,
+          4991
+        ]
+      ],
+      "sample": "ሰላም"
+    },
+    {
+      "name": "Cherokee",
+      "ranges": [
+        [
+          5024,
+          5119
+        ]
+      ]
+    },
+    {
+      "name": "Canadian Aboriginal",
+      "ranges": [
+        [
+          5120,
+          5759
+        ]
+      ]
+    },
+    {
+      "name": "Mongolian",
+      "ranges": [
+        [
+          6144,
+          6319
+        ]
+      ]
+    },
+    {
+      "name": "Ogham",
+      "ranges": [
+        [
+          5760,
+          5791
+        ]
+      ]
+    },
+    {
+      "name": "Bopomofo",
+      "ranges": [
+        [
+          12544,
+          12591
+        ]
+      ]
+    },
+    {
+      "name": "Hangul",
+      "ranges": [
+        [
+          4352,
+          4607
+        ],
+        [
+          12592,
+          12687
+        ],
+        [
+          44032,
+          55215
+        ]
+      ],
+      "sample": "한글"
+    },
+    {
+      "name": "Japanese Hiragana",
+      "ranges": [
+        [
+          12352,
+          12447
+        ]
+      ],
+      "sample": "こんにちは"
+    },
+    {
+      "name": "Japanese Katakana",
+      "ranges": [
+        [
+          12448,
+          12543
+        ],
+        [
+          12784,
+          12799
+        ]
+      ],
+      "sample": "カタカナ"
+    },
+    {
+      "name": "Chinese Han (CJK)",
+      "ranges": [
+        [
+          13312,
+          19903
+        ],
+        [
+          19968,
+          40959
+        ],
+        [
+          63744,
+          64255
+        ],
+        [
+          131072,
+          173791
+        ],
+        [
+          173824,
+          177983
+        ],
+        [
+          177984,
+          178207
+        ],
+        [
+          178208,
+          183983
+        ],
+        [
+          183984,
+          191471
+        ],
+        [
+          191472,
+          192095
+        ],
+        [
+          196608,
+          201551
+        ],
+        [
+          201552,
+          205743
+        ]
+      ],
+      "sample": "汉字"
+    },
+    {
+      "name": "Yi",
+      "ranges": [
+        [
+          40960,
+          42191
+        ]
+      ]
+    },
+    {
+      "name": "Vai",
+      "ranges": [
+        [
+          42240,
+          42559
+        ]
+      ]
+    },
+    {
+      "name": "Adlam",
+      "ranges": [
+        [
+          125184,
+          125279
+        ]
+      ]
+    },
+    {
+      "name": "Tifinagh",
+      "ranges": [
+        [
+          11568,
+          11647
+        ]
+      ]
+    },
+    {
+      "name": "N'Ko",
+      "ranges": [
+        [
+          1984,
+          2047
+        ]
+      ],
+      "sample": "ߒߞߏ"
+    },
+    {
+      "name": "Etruscan",
+      "ranges": [
+        [
+          66304,
+          66351
+        ]
+      ]
+    },
+    {
+      "name": "General Unicode Symbols",
+      "ranges": [
+        [
+          8192,
+          11263
+        ],
+        [
+          127744,
+          129791
+        ]
+      ],
+      "sample": "☀ ☺ ♫",
+      "after_unicode_scripts": true
+    },
+    {
+      "name": "All printable Unicode",
+      "ranges": [
+        [
+          0,
+          1114111
+        ]
+      ],
+      "sample": "𐬀 𐎠 𐭀 فارسی",
+      "after_unicode_scripts": true
+    }
+  ],
+  "aliases": {
+    "avestan": "avesta",
+    "oldpersian": "ancientpersian",
+    "inscriptionalparthian": "parthian",
+    "inscriptionalpahlavi": "pahlavi",
+    "psalterpahlavi": "pahlavi",
+    "hiragana": "japanesehiragana",
+    "katakana": "japanesekatakana",
+    "han": "chinesehancjk"
+  }
+}

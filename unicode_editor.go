@@ -27,6 +27,8 @@ type unicodeEditor struct {
 	redoStack   []editAction
 	richText    *widget.RichText
 	scroll      *container.Scroll
+	caret       *canvas.Rectangle
+	highlight   *canvas.Rectangle
 }
 
 func (e *unicodeEditor) scrollOffsetX() float32 {
@@ -55,13 +57,20 @@ func (e *unicodeEditor) CreateRenderer() fyne.WidgetRenderer {
 	e.scroll = container.NewVScroll(e.richText)
 	background := canvas.NewRectangle(theme.Color(theme.ColorNameInputBackground))
 	background.CornerRadius = theme.Size(theme.SizeNameInputRadius)
+	e.caret = canvas.NewRectangle(theme.Color(theme.ColorNamePrimary))
+	highlightColor, err := parseThemeColor(configString("selection_highlight"))
+	if err != nil {
+		panic(err)
+	}
+	e.highlight = canvas.NewRectangle(highlightColor)
 	e.refreshText()
-	return &unicodeEditorRenderer{background: background, scroll: e.scroll, editor: e}
+	return &unicodeEditorRenderer{background: background, scroll: e.scroll, caret: e.caret, highlight: e.highlight, editor: e}
 }
 
 func (e *unicodeEditor) MinSize() fyne.Size {
 	e.ExtendBaseWidget(e)
-	return fyne.NewSize(100, theme.Size(theme.SizeNameText)*3)
+	return fyne.NewSize(float32(configNumber("editor_minimum_width")),
+		theme.Size(theme.SizeNameText)*float32(configNumber("editor_minimum_height_lines")))
 }
 
 func (e *unicodeEditor) Refresh() {
@@ -111,57 +120,19 @@ func (e *unicodeEditor) refreshText() {
 	}
 
 	runes := []rune(e.Text)
-	cursor := e.clamp(e.cursor, len(runes))
-	start, end := e.selection()
-	segments := make([]widget.RichTextSegment, 0, 5)
-	appendSegment := func(text string, selected bool) {
-		if text == "" {
-			return
-		}
-		colorName := theme.ColorNameForeground
-		if selected {
-			colorName = theme.ColorNamePrimary
-		}
-		segments = append(segments, &widget.TextSegment{
-			Text: text,
-			Style: widget.RichTextStyle{
-				Alignment: alignment,
-				ColorName: colorName,
-				Inline:    true,
-			},
-		})
-	}
-	appendCursor := func() {
-		if e.focused {
-			appendSegment("|", false)
-		}
-	}
-	if start == end {
-		appendSegment(string(runes[:cursor]), false)
-		appendCursor()
-		appendSegment(string(runes[cursor:]), false)
-	} else {
-		appendSegment(string(runes[:start]), false)
-		appendSegment(string(runes[start:end]), true)
-		if cursor == end {
-			appendCursor()
-		}
-		appendSegment(string(runes[end:]), false)
-		if cursor == start {
-			appendCursor()
-		}
-	}
-	if len(segments) == 0 {
-		segments = append(segments, &widget.TextSegment{
-			Text: "",
+	e.cursor = e.clamp(e.cursor, len(runes))
+	e.anchor = e.clamp(e.anchor, len(runes))
+	e.richText.Segments = []widget.RichTextSegment{
+		&widget.TextSegment{
+			Text: e.Text,
 			Style: widget.RichTextStyle{
 				Alignment: alignment,
 				ColorName: theme.ColorNameForeground,
 			},
-		})
+		},
 	}
-	e.richText.Segments = segments
 	e.richText.Refresh()
+	e.updateOverlays()
 }
 
 func (e *unicodeEditor) textAlignment() fyne.TextAlign {
@@ -213,7 +184,9 @@ func (e *unicodeEditor) TypedKey(key *fyne.KeyEvent) {
 		if key.Name == fyne.KeyLeft {
 			delta = -1
 		}
-		if e.rightToLeft {
+		row, _ := e.rowColumn(e.cursor)
+		start, end := e.lineBoundsForRow(row)
+		if isRTLText(string([]rune(e.Text)[start:end])) {
 			delta *= -1
 		}
 		e.moveCursor(e.cursor+delta, e.shiftDown)
@@ -314,28 +287,33 @@ func (e *unicodeEditor) TappedSecondary(event *fyne.PointEvent) {
 	if canvas == nil {
 		return
 	}
-	menu := fyne.NewMenu("",
-		fyne.NewMenuItem("Cut", func() {
+	e.focus()
+	start, end := e.selection()
+	clicked := e.cursorAt(event.Position)
+	if start == end || clicked < start || clicked > end {
+		e.moveCursor(clicked, false)
+	}
+	menu := fyne.NewMenu(configString("empty"),
+		fyne.NewMenuItem(configString("clipboard_cut"), func() {
 			e.copySelectionTo(fyne.CurrentApp().Clipboard())
 			start, end := e.selection()
 			if start != end {
 				e.replaceRange(start, end, "")
 			}
 		}),
-		fyne.NewMenuItem("Copy", func() {
+		fyne.NewMenuItem(configString("clipboard_copy"), func() {
 			e.copySelectionTo(fyne.CurrentApp().Clipboard())
 		}),
-		fyne.NewMenuItem("Paste", func() {
+		fyne.NewMenuItem(configString("clipboard_paste"), func() {
 			e.replaceSelection(fyne.CurrentApp().Clipboard().Content())
 		}),
-		fyne.NewMenuItem("Select all", func() {
+		fyne.NewMenuItem(configString("clipboard_select_all"), func() {
 			e.anchor = 0
 			e.cursor = len([]rune(e.Text))
 			e.Refresh()
 		}),
 	)
-	position := fyne.CurrentApp().Driver().AbsolutePositionForObject(e).Add(event.Position)
-	widget.NewPopUpMenu(menu, canvas).ShowAtPosition(position)
+	widget.NewPopUpMenu(menu, canvas).ShowAtPosition(event.AbsolutePosition)
 }
 
 func (e *unicodeEditor) focus() {
@@ -349,7 +327,7 @@ func (e *unicodeEditor) cursorAt(position fyne.Position) int {
 	runes := []rune(e.Text)
 	rowHeight := theme.Size(theme.SizeNameText) * theme.Size(theme.SizeNameLineSpacing)
 	if rowHeight <= 0 {
-		rowHeight = theme.Size(theme.SizeNameText)
+		rowHeight = theme.Size(theme.SizeNameText) * float32(configNumber("line_height_fallback_factor"))
 	}
 	row := int((position.Y + e.scrollOffsetY()) / rowHeight)
 	lineStart, lineEnd := e.lineBoundsForRow(row)
@@ -361,22 +339,54 @@ func (e *unicodeEditor) cursorAt(position fyne.Position) int {
 	if e.scroll != nil {
 		x += e.scroll.Offset.X
 	}
-	best := lineStart
+	return cursorIndexAtX(line, lineStart, e.scrollWidth()+e.scrollOffsetX(), x, e.rightToLeft, isRTLText(line))
+}
+
+func cursorIndexAtX(line string, lineStart int, viewportWidth, x float32, rightAligned, rightToLeft bool) int {
+	return cursorIndexAtXMeasured(line, lineStart, viewportWidth, x, rightAligned, rightToLeft, func(text string) float32 {
+		return canvas.NewText(text, theme.Color(theme.ColorNameForeground)).MinSize().Width
+	})
+}
+
+func cursorIndexAtXMeasured(line string, lineStart int, viewportWidth, x float32, rightAligned, rightToLeft bool, measure func(string) float32) int {
+	runes := []rune(line)
+	lineWidth := measure(line)
+	startX := float32(0)
+	if rightAligned {
+		startX = viewportWidth - lineWidth
+	}
+	best := 0
 	bestDistance := float32(-1)
-	for col := 0; col <= len([]rune(line)); col++ {
-		prefix := string([]rune(line)[:col])
-		width := canvas.NewText(prefix, theme.Color(theme.ColorNameForeground)).MinSize().Width
-		point := width
-		if e.rightToLeft {
-			point = e.scrollWidth() + e.scrollOffsetX() - width
+	for col := 0; col <= len(runes); col++ {
+		prefixWidth := measure(string(runes[:col]))
+		point := startX + prefixWidth
+		if rightToLeft {
+			point = startX + lineWidth - prefixWidth
 		}
 		distance := absFloat32(point - x)
 		if bestDistance < 0 || distance < bestDistance {
 			bestDistance = distance
-			best = lineStart + col
+			best = col
 		}
 	}
-	return e.clamp(best, len(runes))
+	return lineStart + best
+}
+
+func isRTLText(text string) bool {
+	for _, char := range text {
+		if unicode.Is(unicode.M, char) || unicode.Is(unicode.N, char) {
+			continue
+		}
+		if unicode.IsLetter(char) {
+			for _, scriptName := range appConfig.RTLScripts {
+				if unicode.Is(unicode.Scripts[scriptName], char) {
+					return true
+				}
+			}
+			return false
+		}
+	}
+	return false
 }
 
 func (e *unicodeEditor) scrollOffsetY() float32 {
@@ -391,6 +401,64 @@ func (e *unicodeEditor) scrollWidth() float32 {
 		return e.Size().Width
 	}
 	return e.scroll.Size().Width
+}
+
+func (e *unicodeEditor) updateOverlays() {
+	if e.caret == nil || e.highlight == nil {
+		return
+	}
+	start, end := e.selection()
+	if !e.focused {
+		e.caret.Hide()
+		e.highlight.Hide()
+		return
+	}
+	if start == end {
+		e.highlight.Hide()
+		row, _ := e.rowColumn(e.cursor)
+		lineStart, lineEnd := e.lineBoundsForRow(row)
+		line := string([]rune(e.Text)[lineStart:lineEnd])
+		x := textPositionX(line, e.cursor-lineStart, e.scrollWidth(), e.rightToLeft, isRTLText(line))
+		y := float32(row)*theme.Size(theme.SizeNameText)*theme.Size(theme.SizeNameLineSpacing) - e.scrollOffsetY()
+		e.caret.Move(fyne.NewPos(x-e.scrollOffsetX(), y))
+		e.caret.Resize(fyne.NewSize(theme.Size(theme.SizeNameInputBorder)*float32(configNumber("caret_width_multiplier")),
+			theme.Size(theme.SizeNameText)*theme.Size(theme.SizeNameLineSpacing)))
+		e.caret.Show()
+		return
+	}
+	e.caret.Hide()
+	startRow, startCol := e.rowColumn(start)
+	endRow, endCol := e.rowColumn(end)
+	if startRow != endRow {
+		e.highlight.Hide()
+		return
+	}
+	lineStart, lineEnd := e.lineBoundsForRow(startRow)
+	line := string([]rune(e.Text)[lineStart:lineEnd])
+	left := textPositionX(line, startCol, e.scrollWidth(), e.rightToLeft, isRTLText(line))
+	right := textPositionX(line, endCol, e.scrollWidth(), e.rightToLeft, isRTLText(line))
+	if right < left {
+		left, right = right, left
+	}
+	y := float32(startRow)*theme.Size(theme.SizeNameText)*theme.Size(theme.SizeNameLineSpacing) - e.scrollOffsetY()
+	e.highlight.Move(fyne.NewPos(left-e.scrollOffsetX(), y))
+	e.highlight.Resize(fyne.NewSize(right-left, theme.Size(theme.SizeNameText)*theme.Size(theme.SizeNameLineSpacing)))
+	e.highlight.Show()
+}
+
+func textPositionX(line string, column int, viewportWidth float32, rightAligned, rightToLeft bool) float32 {
+	runes := []rune(line)
+	column = min(max(column, 0), len(runes))
+	lineWidth := canvas.NewText(line, theme.Color(theme.ColorNameForeground)).MinSize().Width
+	prefixWidth := canvas.NewText(string(runes[:column]), theme.Color(theme.ColorNameForeground)).MinSize().Width
+	startX := float32(0)
+	if rightAligned {
+		startX = viewportWidth - lineWidth
+	}
+	if rightToLeft {
+		return startX + lineWidth - prefixWidth
+	}
+	return startX + prefixWidth
 }
 
 func (e *unicodeEditor) moveLine(delta int) {
@@ -472,10 +540,6 @@ func (e *unicodeEditor) redo() {
 	e.undoStack = append(e.undoStack, action)
 	removedLen := len([]rune(action.removed))
 	e.applyTextChange(action.position, action.position+removedLen, action.inserted, action.position+len([]rune(action.inserted)))
-}
-
-func (e *unicodeEditor) copySelection() {
-	e.copySelectionTo(fyne.CurrentApp().Clipboard())
 }
 
 func (e *unicodeEditor) copySelectionTo(clipboard fyne.Clipboard) {
@@ -564,6 +628,8 @@ func (e *unicodeEditor) clamp(value, maximum int) int {
 type unicodeEditorRenderer struct {
 	background *canvas.Rectangle
 	scroll     *container.Scroll
+	caret      *canvas.Rectangle
+	highlight  *canvas.Rectangle
 	editor     *unicodeEditor
 }
 
@@ -572,20 +638,23 @@ func (r *unicodeEditorRenderer) Destroy() {}
 func (r *unicodeEditorRenderer) Layout(size fyne.Size) {
 	r.background.Resize(size)
 	r.scroll.Resize(size)
+	r.editor.updateOverlays()
 }
 
 func (r *unicodeEditorRenderer) MinSize() fyne.Size {
-	return fyne.NewSize(100, theme.Size(theme.SizeNameText)*3)
+	return fyne.NewSize(float32(configNumber("editor_minimum_width")),
+		theme.Size(theme.SizeNameText)*float32(configNumber("editor_minimum_height_lines")))
 }
 
 func (r *unicodeEditorRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.background, r.scroll}
+	return []fyne.CanvasObject{r.background, r.scroll, r.highlight, r.caret}
 }
 
 func (r *unicodeEditorRenderer) Refresh() {
 	r.background.FillColor = theme.Color(theme.ColorNameInputBackground)
 	r.background.Refresh()
 	r.scroll.Refresh()
+	r.editor.updateOverlays()
 }
 
 func absFloat32(value float32) float32 {

@@ -1,0 +1,99 @@
+{
+  "Avesta": {
+    "ranges": [
+      {
+        "start": "10B00",
+        "end": "10B35",
+        "readings": [
+          "a", "aa", "ao", "aao", "an", "aan", "ae", "aee", "e", "ee", "o", "oo", "i", "ii",
+          "u", "uu", "ke", "xe", "xye", "xve", "ge", "gge", "ghe", "ce", "je", "te", "the",
+          "de", "dhe", "tte", "pe", "fe", "be", "bhe", "nge", "ngye", "ngve", "ne", "nye",
+          "nne", "me", "hme", "yye", "ye", "ve", "re", "le", "se", "ze", "she", "zhe", "shye",
+          "sshe", "he"
+        ]
+      }
+    ],
+    "special": {
+      "10B39": "abbreviation",
+      "10B3A": "punctuation",
+      "10B3B": "punctuation",
+      "10B3C": "punctuation",
+      "10B3D": "punctuation",
+      "10B3E": "punctuation",
+      "10B3F": "punctuation"
+    }
+  },
+  "Ancient Persian": {
+    "ranges": [
+      {
+        "start": "103A0",
+        "end": "103C3",
+        "readings": [
+          "a", "i", "u", "ka", "ku", "ga", "gu", "xa", "ca", "ja", "ji", "ta", "tu", "da",
+          "di", "du", "tha", "pa", "ba", "fa", "na", "nu", "ma", "mi", "mu", "ya", "va", "vi",
+          "ra", "ru", "la", "sa", "za", "sha", "ssa", "ha"
+        ]
+      }
+    ],
+    "special": {
+      "103C8": "auramazdaa",
+      "103C9": "auramazdaa-2",
+      "103CA": "auramazdaaha",
+      "103CB": "xshaayathiya",
+      "103CC": "dahyaaush",
+      "103CD": "dahyaaush-2",
+      "103CE": "baga",
+      "103CF": "buumish",
+      "103D0": "word divider",
+      "103D1": "one",
+      "103D2": "two",
+      "103D3": "ten",
+      "103D4": "twenty",
+      "103D5": "hundred"
+    }
+  },
+  "Parthian": {
+    "ranges": [
+      {
+        "start": "10B40",
+        "end": "10B55",
+        "readings": [
+          "a", "b", "g", "d", "h", "w", "z", "h", "t", "y", "k", "l", "m", "n", "s", "ʿ",
+          "p", "ṣ", "q", "r", "š", "t"
+        ]
+      }
+    ],
+    "special": {
+      "10B58": "one",
+      "10B59": "two",
+      "10B5A": "three",
+      "10B5B": "four",
+      "10B5C": "ten",
+      "10B5D": "twenty",
+      "10B5E": "one hundred",
+      "10B5F": "one thousand"
+    }
+  },
+  "Pahlavi": {
+    "ranges": [
+      {
+        "start": "10B60",
+        "end": "10B72",
+        "readings": [
+          "a", "b", "g", "d", "h", "w-ʿ-r", "z", "h", "t", "y", "k", "l", "m-q", "n", "s",
+          "p", "ṣ", "š", "t"
+        ]
+      }
+    ],
+    "special": {
+      "10B78": "one",
+      "10B79": "two",
+      "10B7A": "three",
+      "10B7B": "four",
+      "10B7C": "ten",
+      "10B7D": "twenty",
+      "10B7E": "one hundred",
+      "10B7F": "one thousand"
+    }
+  }
+}

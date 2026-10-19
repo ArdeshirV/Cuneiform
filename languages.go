@@ -13,187 +13,102 @@ type runeRange struct {
 
 type language struct {
 	name    string
+	sample  string
 	ranges  []runeRange
 	scripts []*unicode.RangeTable
 }
 
-func block(first, last rune) []runeRange {
-	return []runeRange{{first: first, last: last}}
-}
+var languages = buildLanguages(appConfig)
 
-var languages = []language{
-	{name: "Avesta", ranges: block(0x10B00, 0x10B3F)},
-	{name: "Pahlavi", ranges: []runeRange{{0x10B60, 0x10B7F}, {0x10B80, 0x10BAF}}},
-	{name: "Parthian", ranges: block(0x10B40, 0x10B5F)},
-	{name: "Ancient Persian", ranges: block(0x103A0, 0x103DF)},
-	{name: "Sogdian", ranges: block(0x10F30, 0x10F6F)},
-	{name: "Old Sogdian", ranges: block(0x10F00, 0x10F2F)},
-	{name: "Manichaean", ranges: block(0x10AC0, 0x10AFF)},
-	{name: "Khwarezmian", ranges: block(0x10FB0, 0x10FDF)},
-	{name: "Old Uyghur", ranges: block(0x10F70, 0x10FAF)},
-	{name: "Cuneiform", ranges: block(0x12000, 0x123FF)},
-	{name: "Egyptian Hieroglyphs", ranges: block(0x13000, 0x1345F)},
-	{name: "Phoenician", ranges: block(0x10900, 0x1091F)},
-	{name: "Ugaritic", ranges: block(0x10380, 0x1039F)},
-	{name: "Linear B", ranges: block(0x10000, 0x1007F)},
-	{name: "Cypriot", ranges: block(0x10800, 0x1083F)},
-	{name: "Old Italic", ranges: block(0x10300, 0x1032F)},
-	{name: "Runic", ranges: block(0x16A0, 0x16FF)},
-	{name: "Gothic", ranges: block(0x10330, 0x1034F)},
-	{name: "Glagolitic", ranges: block(0x2C00, 0x2C5F)},
-	{name: "Coptic", ranges: block(0x2C80, 0x2CFF)},
-	{name: "Greek", ranges: []runeRange{{0x0370, 0x03FF}, {0x1F00, 0x1FFF}}},
-	{name: "Latin", ranges: []runeRange{{0x0020, 0x024F}, {0x1E00, 0x1EFF}, {0xA720, 0xA7FF}, {0xAB30, 0xAB6F}}},
-	{name: "Armenian", ranges: block(0x0530, 0x058F)},
-	{name: "Hebrew", ranges: block(0x0590, 0x05FF)},
-	{name: "Arabic", ranges: []runeRange{{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}}},
-	{name: "Persian", ranges: []runeRange{{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0xFB50, 0xFDFF}, {0xFE70, 0xFEFF}}},
-	{name: "Syriac", ranges: block(0x0700, 0x074F)},
-	{name: "Thaana", ranges: block(0x0780, 0x07BF)},
-	{name: "Devanagari", ranges: block(0x0900, 0x097F)},
-	{name: "Bengali", ranges: block(0x0980, 0x09FF)},
-	{name: "Gurmukhi", ranges: block(0x0A00, 0x0A7F)},
-	{name: "Gujarati", ranges: block(0x0A80, 0x0AFF)},
-	{name: "Odia", ranges: block(0x0B00, 0x0B7F)},
-	{name: "Tamil", ranges: block(0x0B80, 0x0BFF)},
-	{name: "Telugu", ranges: block(0x0C00, 0x0C7F)},
-	{name: "Kannada", ranges: block(0x0C80, 0x0CFF)},
-	{name: "Malayalam", ranges: block(0x0D00, 0x0D7F)},
-	{name: "Sinhala", ranges: block(0x0D80, 0x0DFF)},
-	{name: "Thai", ranges: block(0x0E00, 0x0E7F)},
-	{name: "Lao", ranges: block(0x0E80, 0x0EFF)},
-	{name: "Tibetan", ranges: block(0x0F00, 0x0FFF)},
-	{name: "Myanmar", ranges: block(0x1000, 0x109F)},
-	{name: "Georgian", ranges: block(0x10A0, 0x10FF)},
-	{name: "Ethiopic", ranges: block(0x1200, 0x137F)},
-	{name: "Cherokee", ranges: block(0x13A0, 0x13FF)},
-	{name: "Canadian Aboriginal", ranges: block(0x1400, 0x167F)},
-	{name: "Mongolian", ranges: block(0x1800, 0x18AF)},
-	{name: "Ogham", ranges: block(0x1680, 0x169F)},
-	{name: "Bopomofo", ranges: block(0x3100, 0x312F)},
-	{name: "Hangul", ranges: []runeRange{{0x1100, 0x11FF}, {0x3130, 0x318F}, {0xAC00, 0xD7AF}}},
-	{name: "Japanese Hiragana", ranges: block(0x3040, 0x309F)},
-	{name: "Japanese Katakana", ranges: []runeRange{{0x30A0, 0x30FF}, {0x31F0, 0x31FF}}},
-	{name: "Chinese Han (CJK)", ranges: []runeRange{
-		{0x3400, 0x4DBF}, {0x4E00, 0x9FFF}, {0xF900, 0xFAFF},
-		{0x20000, 0x2A6DF}, {0x2A700, 0x2B73F}, {0x2B740, 0x2B81F},
-		{0x2B820, 0x2CEAF}, {0x2CEB0, 0x2EBEF}, {0x2EBF0, 0x2EE5F},
-		{0x30000, 0x3134F}, {0x31350, 0x323AF},
-	}},
-	{name: "Yi", ranges: block(0xA000, 0xA4CF)},
-	{name: "Vai", ranges: block(0xA500, 0xA63F)},
-	{name: "Adlam", ranges: block(0x1E900, 0x1E95F)},
-	{name: "Tifinagh", ranges: block(0x2D30, 0x2D7F)},
-	{name: "N'Ko", ranges: block(0x07C0, 0x07FF)},
-	{name: "Etruscan", ranges: block(0x10300, 0x1032F)},
-	{name: "General Unicode Symbols", ranges: []runeRange{{0x2000, 0x2BFF}, {0x1F300, 0x1FAFF}}},
-	{name: "All printable Unicode", ranges: block(0, unicode.MaxRune)},
-}
+func buildLanguages(config appConfiguration) []language {
+	var entries []language
+	var afterScripts []language
+	known := make(map[string]int, len(config.Languages.Languages))
+	for _, definition := range config.Languages.Languages {
+		entry := language{
+			name:   definition.Name,
+			sample: definition.Sample,
+		}
+		for _, bounds := range definition.Ranges {
+			entry.ranges = append(entry.ranges, runeRange{first: rune(bounds[0]), last: rune(bounds[1])})
+		}
+		if definition.AfterUnicodeScripts {
+			afterScripts = append(afterScripts, entry)
+			continue
+		}
+		known[normalizeLanguageName(entry.name)] = len(entries)
+		entries = append(entries, entry)
+	}
 
-func init() {
-	special := languages[len(languages)-2:]
-	all := append([]language(nil), languages[:len(languages)-2]...)
-	known := make(map[string]int, len(all))
-	for i, lang := range all {
-		known[normalizeLanguageName(lang.name)] = i
-	}
-	aliases := map[string]string{
-		"avestan":               "avesta",
-		"oldpersian":            "ancientpersian",
-		"inscriptionalparthian": "parthian",
-		"inscriptionalpahlavi":  "pahlavi",
-		"psalterpahlavi":        "pahlavi",
-		"hiragana":              "japanesehiragana",
-		"katakana":              "japanesekatakana",
-		"han":                   "chinesehancjk",
-	}
 	scriptNames := make([]string, 0, len(unicode.Scripts))
 	for scriptName := range unicode.Scripts {
 		scriptNames = append(scriptNames, scriptName)
 	}
 	sort.Strings(scriptNames)
 	for _, scriptName := range scriptNames {
-		if scriptName == "Common" || scriptName == "Inherited" {
+		if containsString(config.ExcludedScripts, scriptName) {
 			continue
 		}
 		normalized := normalizeLanguageName(scriptName)
-		if alias, ok := aliases[normalized]; ok {
+		if alias, exists := config.Languages.Aliases[normalized]; exists {
 			normalized = alias
 		}
 		if index, exists := known[normalized]; exists {
-			all[index].scripts = append(all[index].scripts, unicode.Scripts[scriptName])
+			entries[index].scripts = append(entries[index].scripts, unicode.Scripts[scriptName])
 			continue
 		}
-		name := strings.ReplaceAll(scriptName, "_", " ")
-		all = append(all, language{name: name, scripts: []*unicode.RangeTable{unicode.Scripts[scriptName]}})
-		known[normalizeLanguageName(name)] = len(all) - 1
+		name := strings.NewReplacer(flattenReplacements(config.LanguageNameReplacements)...).Replace(scriptName)
+		known[normalizeLanguageName(name)] = len(entries)
+		entries = append(entries, language{
+			name:    name,
+			scripts: []*unicode.RangeTable{unicode.Scripts[scriptName]},
+		})
 	}
-	languages = append(all, special...)
+	return append(entries, afterScripts...)
 }
 
 func normalizeLanguageName(name string) string {
 	name = strings.ToLower(name)
-	name = strings.NewReplacer(" ", "", "-", "", "_", "", "'", "").Replace(name)
-	return name
+	return strings.NewReplacer(flattenReplacements(appConfig.LanguageNormalizationReplacements)...).Replace(name)
+}
+
+func flattenReplacements(replacements [][2]string) []string {
+	values := make([]string, 0, len(replacements)*2)
+	for _, pair := range replacements {
+		values = append(values, pair[0], pair[1])
+	}
+	return values
+}
+
+func containsString(values []string, value string) bool {
+	for _, candidate := range values {
+		if candidate == value {
+			return true
+		}
+	}
+	return false
 }
 
 func languageOptionName(lang language) string {
-	if sample, ok := languageSamples[lang.name]; ok {
-		return lang.name + " — " + sample
-	}
-	chars := charactersFor(lang)
-	sample := make([]rune, 0, 3)
-	for _, char := range chars {
-		if char == ' ' || unicode.Is(unicode.M, char) {
-			continue
+	sample := lang.sample
+	if sample == "" {
+		chars := charactersFor(lang)
+		runes := make([]rune, 0, int(configNumber("language_preview_characters")))
+		for _, char := range chars {
+			if char == ' ' || unicode.Is(unicode.M, char) {
+				continue
+			}
+			runes = append(runes, char)
+			if len(runes) == cap(runes) {
+				break
+			}
 		}
-		sample = append(sample, char)
-		if len(sample) == 3 {
-			break
-		}
+		sample = string(runes)
 	}
-	if len(sample) == 0 {
+	if sample == "" {
 		return lang.name
 	}
-	return lang.name + " — " + string(sample)
-}
-
-var languageSamples = map[string]string{
-	"Avesta":               "𐬀𐬵𐬎𐬭𐬀",
-	"Pahlavi":              "𐭯𐭠𐭫𐭥𐭩",
-	"Parthian":             "𐭀𐭓𐭔𐭀𐭊",
-	"Ancient Persian":      "𐎭𐎠𐎼𐎹𐎺𐎢𐏁",
-	"Sogdian":              "𐼰𐼰𐼰",
-	"Old Sogdian":          "𐼀𐼀𐼀",
-	"Manichaean":           "𐫀𐫁𐫂",
-	"Khwarezmian":          "𐾰𐾱𐾲",
-	"Old Uyghur":           "𐽰𐽱𐽲",
-	"Cuneiform":            "𒀀𒈾",
-	"Egyptian Hieroglyphs": "𓂀𓆣",
-	"Phoenician":           "𐤀𐤁𐤂",
-	"Ugaritic":             "𐎀𐎁𐎂",
-	"Linear B":             "𐀀𐀁𐀂",
-	"Old Italic":           "𐌀𐌁𐌂",
-	"Runic":                "ᚠᚢᚦᚨᚱᚲ",
-	"Gothic":               "𐌲𐌿𐍄𐌹𐍃",
-	"Greek":                "λόγος",
-	"Latin":                "salve",
-	"Armenian":             "Բարեւ",
-	"Hebrew":               "שלום",
-	"Arabic":               "سلام",
-	"Syriac":               "ܫܠܡܐ",
-	"Devanagari":           "नमस्ते",
-	"Bengali":              "বাংলা",
-	"Tamil":                "தமிழ்",
-	"Thai":                 "สวัสดี",
-	"Georgian":             "გამარჯობა",
-	"Ethiopic":             "ሰላም",
-	"Japanese Hiragana":    "こんにちは",
-	"Japanese Katakana":    "カタカナ",
-	"Chinese Han (CJK)":    "汉字",
-	"Hangul":               "한글",
-	"Persian":              "فارسی",
-	"N'Ko":                 "ߒߞߏ",
+	return formatConfigString("language_sample_format", lang.name, sample)
 }
 
 func charactersFor(lang language) []rune {

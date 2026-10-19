@@ -1,0 +1,19 @@
+package main
+
+import "testing"
+
+func TestEmbeddedConfigurationLoadsLanguageAndReadingAssets(t *testing.T) {
+	config, err := loadAppConfiguration()
+	if err != nil {
+		t.Fatalf("load embedded configuration: %v", err)
+	}
+	if got, want := config.Languages.Languages[0].Name, "Avesta"; got != want {
+		t.Fatalf("first language = %q, want %q", got, want)
+	}
+	if got := config.Readings["Avesta"].Ranges[0].Readings[0]; got != "a" {
+		t.Fatalf("first Avesta reading = %q, want %q", got, "a")
+	}
+	if len(config.ThemePalettes) == 0 || len(config.Strings) == 0 || len(config.Numbers) == 0 {
+		t.Fatal("embedded app settings are incomplete")
+	}
+}

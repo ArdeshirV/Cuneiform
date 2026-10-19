@@ -24,7 +24,7 @@ func TestUnicodeEditorMaintainsLogicalTextAndHistory(t *testing.T) {
 }
 
 func TestUnicodeEditorRTLChangesAlignmentAndArrowDirection(t *testing.T) {
-	editor := &unicodeEditor{Text: "abc", cursor: 1, anchor: -1}
+	editor := &unicodeEditor{Text: "فارسی", cursor: 1, anchor: -1}
 	editor.SetRightToLeft(true)
 	if !editor.rightToLeft {
 		t.Fatal("RTL mode was not enabled")
@@ -49,5 +49,25 @@ func TestUnicodeEditorDoesNotDirtyOnNoOpDelete(t *testing.T) {
 	editor.TypedKey(&fyne.KeyEvent{Name: fyne.KeyBackspace})
 	if changed {
 		t.Fatal("backspace at the beginning reported a text change")
+	}
+}
+
+func TestCursorHitTestingUsesTextAndParagraphDirection(t *testing.T) {
+	measure := func(text string) float32 { return float32(len([]rune(text)) * 10) }
+
+	if got := cursorIndexAtXMeasured("abc", 5, 100, 70, true, false, measure); got != 5 {
+		t.Fatalf("RTL-aligned LTR text at left edge mapped to cursor %d, want 5", got)
+	}
+	if got := cursorIndexAtXMeasured("אבג", 5, 100, 100, true, true, measure); got != 5 {
+		t.Fatalf("RTL text at right edge mapped to cursor %d, want 5", got)
+	}
+	if got := cursorIndexAtXMeasured("אבג", 5, 100, 70, true, true, measure); got != 8 {
+		t.Fatalf("RTL text at left edge mapped to cursor %d, want 8", got)
+	}
+	if got := cursorIndexAtXMeasured("אבג", 5, 100, 30, false, true, measure); got != 5 {
+		t.Fatalf("left-aligned RTL text at right edge mapped to cursor %d, want 5", got)
+	}
+	if got := cursorIndexAtXMeasured("אבג", 5, 100, 0, false, true, measure); got != 8 {
+		t.Fatalf("left-aligned RTL text at left edge mapped to cursor %d, want 8", got)
 	}
 }

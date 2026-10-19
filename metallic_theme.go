@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
+	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -14,40 +17,57 @@ type metallicTheme struct {
 }
 
 func (t metallicTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	if t.mode == "System" {
+	if t.mode == configString("theme_system") {
 		return theme.DefaultTheme().Color(name, variant)
 	}
-	if t.mode == "Metallic Light" {
-		switch name {
-		case theme.ColorNameBackground:
-			return color.NRGBA{R: 0xD8, G: 0xDC, B: 0xE0, A: 0xFF}
-		case theme.ColorNameInputBackground:
-			return color.NRGBA{R: 0xF1, G: 0xF3, B: 0xF5, A: 0xFF}
-		case theme.ColorNameButton:
-			return color.NRGBA{R: 0xC1, G: 0xC8, B: 0xCE, A: 0xFF}
-		case theme.ColorNamePrimary:
-			return color.NRGBA{R: 0x3F, G: 0x75, B: 0x91, A: 0xFF}
-		case theme.ColorNameForeground:
-			return color.NRGBA{R: 0x19, G: 0x22, B: 0x28, A: 0xFF}
-		}
-		return theme.DefaultTheme().Color(name, theme.VariantLight)
+	palette, exists := appConfig.ThemePalettes[t.mode]
+	if !exists {
+		return theme.DefaultTheme().Color(name, variant)
 	}
-
+	paletteVariant := theme.VariantDark
+	if palette.Variant == configString("theme_variant_light") {
+		paletteVariant = theme.VariantLight
+	}
+	var value string
 	switch name {
 	case theme.ColorNameBackground:
-		return color.NRGBA{R: 0x20, G: 0x25, B: 0x2A, A: 0xFF}
+		value = palette.Background
 	case theme.ColorNameInputBackground:
-		return color.NRGBA{R: 0x15, G: 0x19, B: 0x1D, A: 0xFF}
+		value = palette.Input
 	case theme.ColorNameButton:
-		return color.NRGBA{R: 0x38, G: 0x40, B: 0x47, A: 0xFF}
+		value = palette.Button
 	case theme.ColorNamePrimary:
-		return color.NRGBA{R: 0x75, G: 0xB5, B: 0xD1, A: 0xFF}
+		value = palette.Primary
 	case theme.ColorNameForeground:
-		return color.NRGBA{R: 0xE5, G: 0xE9, B: 0xEC, A: 0xFF}
+		value = palette.Foreground
 	case theme.ColorNameHover:
-		return color.NRGBA{R: 0x4A, G: 0x55, B: 0x5E, A: 0xFF}
+		value = palette.Hover
 	}
-	return theme.DefaultTheme().Color(name, theme.VariantDark)
+	if value == "" {
+		return theme.DefaultTheme().Color(name, paletteVariant)
+	}
+	parsed, err := parseThemeColor(value)
+	if err != nil {
+		panic(fmt.Errorf(configString("theme_color_invalid"), value, err))
+	}
+	return parsed
+}
+
+func parseThemeColor(value string) (color.NRGBA, error) {
+	raw := strings.TrimPrefix(value, configString("color_hex_prefix"))
+	if len(raw) != int(configNumber("color_hex_digits")) {
+		return color.NRGBA{}, fmt.Errorf(configString("theme_color_hex_digits"), int(configNumber("color_hex_digits")))
+	}
+	parsed, err := strconv.ParseUint(raw, int(configNumber("color_hex_base")), int(configNumber("color_bits")))
+	if err != nil {
+		return color.NRGBA{}, err
+	}
+	return color.NRGBA{
+		R: uint8(parsed >> uint(configNumber("color_red_shift"))),
+		G: uint8(parsed >> uint(configNumber("color_green_shift"))),
+		B: uint8(parsed >> uint(configNumber("color_blue_shift"))),
+		A: uint8(parsed),
+	}, nil
 }
 
 func (t metallicTheme) Icon(name fyne.ThemeIconName) fyne.Resource {

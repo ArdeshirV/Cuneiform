@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -21,13 +20,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"golang.org/x/image/font/sfnt"
-)
-
-const (
-	keyboardColumns = 5
-	appVersion      = "1.0"
-	bundledFontName = "Unicode Script Fallback (bundled)"
-	systemFontName  = "System default"
 )
 
 //go:embed Icon.png
@@ -47,18 +39,22 @@ type editor struct {
 	loading     bool
 }
 
+func keyboardColumns() int {
+	return int(configNumber("keyboard_columns"))
+}
+
 func main() {
-	application := app.NewWithID("org.ardeshirv.cuneiform")
-	window := application.NewWindow("Cuneiform")
-	window.Resize(fyne.NewSize(1000, 760))
-	appIcon := fyne.NewStaticResource("Icon.png", appIconBytes)
+	application := app.NewWithID(appConfig.Application.ID)
+	window := application.NewWindow(appConfig.Application.Name)
+	window.Resize(fyne.NewSize(float32(configNumber("initial_window_width")), float32(configNumber("initial_window_height"))))
+	appIcon := fyne.NewStaticResource(appConfig.Application.Icon, appIconBytes)
 	window.SetIcon(appIcon)
 
 	e := &editor{application: application, window: window, encoding: encodingUTF8}
 	e.applySettings()
 	e.text = newUnicodeEditor()
-	e.text.SetPlaceHolder("Open or start a Unicode text document…")
-	e.status = widget.NewLabel("")
+	e.text.SetPlaceHolder(configString("placeholder"))
+	e.status = widget.NewLabel(configString("empty"))
 	e.text.OnChanged = func(string) {
 		if !e.loading {
 			e.dirty = true
@@ -69,11 +65,11 @@ func main() {
 	languageSelect := widget.NewSelect(languageNames(), nil)
 	languageSelect.SetSelected(languageOptionName(languages[0]))
 	keyboard := newKeyboard(languages[0], e.text)
-	rightToLeft := widget.NewCheck("Right to left", nil)
-	rightToLeft.SetChecked(application.Preferences().BoolWithFallback("right_to_left", true))
+	rightToLeft := widget.NewCheck(configString("right_to_left"), nil)
+	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), configNumber("rtl_default") != 0))
 	e.text.SetRightToLeft(rightToLeft.Checked)
 	rightToLeft.OnChanged = func(enabled bool) {
-		application.Preferences().SetBool("right_to_left", enabled)
+		application.Preferences().SetBool(preferenceKey("right_to_left"), enabled)
 		e.text.SetRightToLeft(enabled)
 	}
 	languageSelect.OnChanged = func(name string) {
@@ -85,26 +81,26 @@ func main() {
 		}
 	}
 
-	openButton := widget.NewButton("Open", e.open)
-	saveButton := widget.NewButton("Save", e.save)
-	saveAsButton := widget.NewButton("Save As", e.saveAs)
-	fontButton := widget.NewButton("Font", e.showFontDialog)
-	settingsButton := widget.NewButton("Settings", e.showSettingsDialog)
-	aboutButton := widget.NewButton("About", e.showAbout)
-	exitButton := widget.NewButton("Exit", e.requestClose)
+	openButton := widget.NewButton(configString("open"), e.open)
+	saveButton := widget.NewButton(configString("save"), e.save)
+	saveAsButton := widget.NewButton(configString("save_as"), e.saveAs)
+	fontButton := widget.NewButton(configString("font"), e.showFontDialog)
+	settingsButton := widget.NewButton(configString("settings"), e.showSettingsDialog)
+	aboutButton := widget.NewButton(configString("about"), e.showAbout)
+	exitButton := widget.NewButton(configString("exit"), e.requestClose)
 	top := container.NewVBox(
 		container.NewBorder(nil, nil,
 			container.NewHBox(openButton, saveButton, saveAsButton, fontButton, settingsButton, aboutButton, rightToLeft),
 			exitButton, nil),
-		container.NewBorder(nil, nil, widget.NewLabel("Language:"), nil, languageSelect),
+		container.NewBorder(nil, nil, widget.NewLabel(configString("language")), nil, languageSelect),
 	)
 	content := container.NewVSplit(e.text, keyboard)
 	preferences := application.Preferences()
-	content.SetOffset(preferences.FloatWithFallback("split_offset", 0.3))
+	content.SetOffset(preferences.FloatWithFallback(preferenceKey("split_offset"), configNumber("default_editor_fraction")))
 	window.SetContent(container.NewBorder(top, e.status, nil, nil, content))
 	stopSavingSplit := make(chan struct{})
 	window.SetOnClosed(func() {
-		preferences.SetFloat("split_offset", content.Offset)
+		preferences.SetFloat(preferenceKey("split_offset"), content.Offset)
 		close(stopSavingSplit)
 	})
 	window.SetCloseIntercept(e.requestClose)
@@ -132,19 +128,19 @@ type characterKeyboard struct {
 func newKeyboard(lang language, entry *unicodeEditor) *characterKeyboard {
 	k := &characterKeyboard{entry: entry}
 	k.list = widget.NewList(
-		func() int { return (len(k.chars) + keyboardColumns - 1) / keyboardColumns },
+		func() int { return (len(k.chars) + keyboardColumns() - 1) / keyboardColumns() },
 		func() fyne.CanvasObject {
-			buttons := make([]fyne.CanvasObject, keyboardColumns)
+			buttons := make([]fyne.CanvasObject, keyboardColumns())
 			for i := range buttons {
-				buttons[i] = widget.NewButton("", nil)
+				buttons[i] = widget.NewButton(configString("empty"), nil)
 			}
-			return container.NewGridWithColumns(keyboardColumns, buttons...)
+			return container.NewGridWithColumns(keyboardColumns(), buttons...)
 		},
 		func(id widget.ListItemID, object fyne.CanvasObject) {
 			grid := object.(*fyne.Container)
 			for col, object := range grid.Objects {
 				button := object.(*widget.Button)
-				index := int(id)*keyboardColumns + col
+				index := int(id)*keyboardColumns() + col
 				if index >= len(k.chars) {
 					button.Hide()
 					button.OnTapped = nil
@@ -152,7 +148,7 @@ func newKeyboard(lang language, entry *unicodeEditor) *characterKeyboard {
 				}
 				char := k.chars[index]
 				button.Show()
-				button.SetText(keyLabel(char) + " " + phoneticFor(k.languageName, char))
+				button.SetText(keyLabel(char) + configString("key_label_separator") + strings.TrimSpace(phoneticFor(k.languageName, char)))
 				button.OnTapped = func() {
 					k.entry.TypedRune(char)
 				}
@@ -177,10 +173,10 @@ func (k *characterKeyboard) SetList(lang language, entry *unicodeEditor) {
 
 func keyLabel(char rune) string {
 	if char == ' ' {
-		return "␠"
+		return configString("space_key")
 	}
 	if unicode.Is(unicode.M, char) {
-		return "◌" + string(char)
+		return configString("combining_circle") + string(char)
 	}
 	return string(char)
 }
@@ -280,7 +276,7 @@ func (e *editor) saveAsWithCompletion(completion func(bool)) {
 			completion(true)
 		}
 	}, e.window)
-	saveDialog.SetFileName("untitled.txt")
+	saveDialog.SetFileName(configString("untitled_filename"))
 	saveDialog.Show()
 }
 
@@ -298,41 +294,41 @@ func writeDocument(writer fyne.URIWriteCloser, text string, encoding textEncodin
 }
 
 func (e *editor) updateStatus() {
-	name := "Untitled"
+	name := configString("untitled")
 	if e.uri != nil {
 		name = e.uri.Name()
 	}
-	marker := ""
+	marker := configString("empty")
 	if e.dirty {
-		marker = " •"
+		marker = configString("dirty_marker")
 	}
-	e.status.SetText(fmt.Sprintf("%s%s   |   %s   |   Unicode data: %s   |   %d code points",
+	e.status.SetText(formatConfigString("status_format",
 		name, marker, e.encoding, unicode.Version, utf8RuneCount(e.text.Text)))
 }
 
 func (e *editor) applySettings() {
 	preferences := e.application.Preferences()
-	scaleChoice := preferences.StringWithFallback("font_size", "Medium")
-	scale := float32(1)
+	scaleChoice := preferences.StringWithFallback(preferenceKey("font_size"), configString("font_size_medium"))
+	scale := float32(configNumber("font_scale_medium"))
 	switch scaleChoice {
-	case "Small":
-		scale = 0.85
-	case "Large":
-		scale = 1.15
+	case configString("font_size_small"):
+		scale = float32(configNumber("font_scale_small"))
+	case configString("font_size_large"):
+		scale = float32(configNumber("font_scale_large"))
 	}
-	font := fyne.Resource(fyne.NewStaticResource("UnicodeScriptFallback.ttf", unicodeFontBytes))
-	if encodedFont := preferences.String("custom_font_data"); encodedFont != "" {
+	font := fyne.Resource(fyne.NewStaticResource(configString("font_bundled_name"), unicodeFontBytes))
+	if encodedFont := preferences.String(preferenceKey("custom_font_data")); encodedFont != "" {
 		fontData, err := base64.StdEncoding.DecodeString(encodedFont)
 		if err != nil {
-			dialog.ShowError(fmt.Errorf("load saved font: %w", err), e.window)
-			preferences.SetString("custom_font_name", "")
-			preferences.SetString("custom_font_data", "")
+			dialog.ShowError(fmt.Errorf(configString("font_load_error"), err), e.window)
+			preferences.SetString(preferenceKey("custom_font_name"), "")
+			preferences.SetString(preferenceKey("custom_font_data"), "")
 		} else {
-			font = fyne.NewStaticResource(preferences.StringWithFallback("custom_font_name", "custom-font.ttf"), fontData)
+			font = fyne.NewStaticResource(preferences.StringWithFallback(preferenceKey("custom_font_name"), configString("font_file_default_name")), fontData)
 		}
 	}
 	e.application.Settings().SetTheme(metallicTheme{
-		mode:      preferences.StringWithFallback("theme", "Metallic Dark"),
+		mode:      preferences.StringWithFallback(preferenceKey("theme"), configString("theme_dark")),
 		font:      font,
 		fontScale: scale,
 	})
@@ -348,74 +344,74 @@ func (e *editor) showFontDialog() {
 			return
 		}
 		defer reader.Close()
-		fontData, err := io.ReadAll(io.LimitReader(reader, (20<<20)+1))
+		fontLimit := int64(configNumber("default_font_file_limit_bytes"))
+		fontData, err := io.ReadAll(io.LimitReader(reader, fontLimit+1))
 		if err != nil {
 			dialog.ShowError(err, e.window)
 			return
 		}
-		if len(fontData) > 20<<20 {
-			dialog.ShowError(errors.New("font file exceeds the 20 MiB limit"), e.window)
+		if int64(len(fontData)) > fontLimit {
+			dialog.ShowError(fmt.Errorf(configString("font_file_too_large"), int(configNumber("default_font_file_limit_mib"))), e.window)
 			return
 		}
 		if _, err := sfnt.Parse(fontData); err != nil {
-			dialog.ShowError(fmt.Errorf("invalid TrueType/OpenType font: %w", err), e.window)
+			dialog.ShowError(fmt.Errorf(configString("font_file_invalid"), err), e.window)
 			return
 		}
 		preferences := e.application.Preferences()
-		preferences.SetString("custom_font_name", filepath.Base(reader.URI().Name()))
-		preferences.SetString("custom_font_data", base64.StdEncoding.EncodeToString(fontData))
+		preferences.SetString(preferenceKey("custom_font_name"), filepath.Base(reader.URI().Name()))
+		preferences.SetString(preferenceKey("custom_font_data"), base64.StdEncoding.EncodeToString(fontData))
 		e.applySettings()
 	}, e.window)
-	fontDialog.SetFilter(storage.NewExtensionFileFilter([]string{".ttf", ".otf"}))
+	fontDialog.SetFilter(storage.NewExtensionFileFilter([]string{configString("font_extension_ttf"), configString("font_extension_otf")}))
 	fontDialog.Show()
 }
 
 func (e *editor) showSettingsDialog() {
 	preferences := e.application.Preferences()
-	themeSelection := widget.NewSelect([]string{"Metallic Dark", "Metallic Light", "System"}, nil)
-	themeSelection.SetSelected(preferences.StringWithFallback("theme", "Metallic Dark"))
+	themeSelection := widget.NewSelect(appConfig.ThemeOptions, nil)
+	themeSelection.SetSelected(preferences.StringWithFallback(preferenceKey("theme"), configString("theme_dark")))
 	themeSelection.OnChanged = func(value string) {
-		preferences.SetString("theme", value)
+		preferences.SetString(preferenceKey("theme"), value)
 		e.applySettings()
 	}
-	sizeSelection := widget.NewSelect([]string{"Small", "Medium", "Large"}, nil)
-	sizeSelection.SetSelected(preferences.StringWithFallback("font_size", "Medium"))
+	sizeSelection := widget.NewSelect(appConfig.FontSizeOptions, nil)
+	sizeSelection.SetSelected(preferences.StringWithFallback(preferenceKey("font_size"), configString("font_size_medium")))
 	sizeSelection.OnChanged = func(value string) {
-		preferences.SetString("font_size", value)
+		preferences.SetString(preferenceKey("font_size"), value)
 		e.applySettings()
 	}
 	content := container.NewVBox(
-		widget.NewLabel("Theme"),
+		widget.NewLabel(configString("theme_settings_label")),
 		themeSelection,
-		widget.NewLabel("Text size"),
+		widget.NewLabel(configString("font_settings_label")),
 		sizeSelection,
-		widget.NewButton("Use bundled font", func() {
+		widget.NewButton(configString("font_bundled_button"), func() {
 			preferences := e.application.Preferences()
-			preferences.SetString("custom_font_name", "")
-			preferences.SetString("custom_font_data", "")
+			preferences.SetString(preferenceKey("custom_font_name"), "")
+			preferences.SetString(preferenceKey("custom_font_data"), "")
 			e.applySettings()
 		}),
 	)
-	dialog.NewCustom("Settings", "Close", content, e.window).Show()
+	dialog.NewCustom(configString("settings"), configString("settings_close"), content, e.window).Show()
 }
 
 func (e *editor) showAbout() {
-	icon := canvas.NewImageFromResource(fyne.NewStaticResource("Icon.png", appIconBytes))
+	icon := canvas.NewImageFromResource(fyne.NewStaticResource(appConfig.Application.Icon, appIconBytes))
 	icon.FillMode = canvas.ImageFillContain
-	icon.SetMinSize(fyne.NewSize(72, 72))
-	projectURL := &url.URL{Scheme: "https", Host: "github.com", Path: "/ArdeshirV/cuneiform"}
-	appName := canvas.NewText("Cuneiform", theme.ForegroundColor())
-	appName.TextSize = theme.Size(theme.SizeNameText) * 3
-	version := canvas.NewText("Version: "+appVersion, theme.ForegroundColor())
+	icon.SetMinSize(fyne.NewSize(float32(configNumber("about_icon_size")), float32(configNumber("about_icon_size"))))
+	appName := canvas.NewText(configString("about_title"), theme.ForegroundColor())
+	appName.TextSize = theme.Size(theme.SizeNameText) * float32(configNumber("about_name_font_multiplier"))
+	version := canvas.NewText(configString("about_version")+appConfig.Application.Version, theme.ForegroundColor())
 	version.TextSize = theme.Size(theme.SizeNameCaptionText)
-	version.Move(fyne.NewPos(0, -theme.Size(theme.SizeNameCaptionText)/2))
+	version.Move(fyne.NewPos(0, theme.Size(theme.SizeNameCaptionText)*float32(configNumber("about_version_vertical_offset_factor"))))
 	versionHolder := container.NewWithoutLayout(version)
 	details := container.NewVBox(
 		container.NewHBox(icon, appName, versionHolder),
-		widget.NewLabel("Copyright (c) 2026 @ArdeshirV, Licenced under GPLv3+"),
-		widget.NewHyperlink("https://github.com/ArdeshirV/cuneiform", projectURL),
+		widget.NewLabel(appConfig.Application.Copyright),
+		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
 	)
-	dialog.NewCustom("About", "Close", details, e.window).Show()
+	dialog.NewCustom(configString("about_dialog_title"), configString("close"), details, e.window).Show()
 }
 
 func (e *editor) requestClose() {
@@ -425,12 +421,12 @@ func (e *editor) requestClose() {
 	}
 
 	confirmation := dialog.NewCustomWithoutButtons(
-		"Unsaved changes",
-		widget.NewLabel("Do you want to save changes?"),
+		configString("save_changes_title"),
+		widget.NewLabel(configString("save_changes_message")),
 		e.window,
 	)
 	confirmation.SetButtons([]fyne.CanvasObject{
-		widget.NewButton("Yes", func() {
+		widget.NewButton(configString("yes"), func() {
 			confirmation.Hide()
 			e.saveWithCompletion(func(saved bool) {
 				if saved {
@@ -438,11 +434,11 @@ func (e *editor) requestClose() {
 				}
 			})
 		}),
-		widget.NewButton("No", func() {
+		widget.NewButton(configString("no"), func() {
 			confirmation.Hide()
 			e.quit()
 		}),
-		widget.NewButton("Cancel", confirmation.Hide),
+		widget.NewButton(configString("cancel"), confirmation.Hide),
 	})
 	confirmation.Show()
 }
@@ -453,7 +449,7 @@ func (e *editor) quit() {
 }
 
 func persistSplitOffset(split *container.Split, preferences fyne.Preferences, done <-chan struct{}) {
-	ticker := time.NewTicker(250 * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(configNumber("splitter_save_interval_millis")) * time.Millisecond)
 	defer ticker.Stop()
 	last := split.Offset
 	for {
@@ -464,7 +460,7 @@ func persistSplitOffset(split *container.Split, preferences fyne.Preferences, do
 			fyne.Do(func() {
 				if split.Offset != last {
 					last = split.Offset
-					preferences.SetFloat("split_offset", last)
+					preferences.SetFloat(preferenceKey("split_offset"), last)
 				}
 			})
 		}
@@ -472,5 +468,5 @@ func persistSplitOffset(split *container.Split, preferences fyne.Preferences, do
 }
 
 func utf8RuneCount(text string) int {
-	return len([]rune(strings.ToValidUTF8(text, "\uFFFD")))
+	return len([]rune(strings.ToValidUTF8(text, configString("invalid_utf8_replacement"))))
 }

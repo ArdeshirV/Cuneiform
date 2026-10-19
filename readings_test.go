@@ -3,18 +3,6 @@ package main
 import "testing"
 
 func TestAncientScriptReadings(t *testing.T) {
-	if got, want := len(avestanReadings), 54; got != want {
-		t.Fatalf("Avesta readings count = %d, want %d", got, want)
-	}
-	if got, want := len(oldPersianReadings), 36; got != want {
-		t.Fatalf("Ancient Persian readings count = %d, want %d", got, want)
-	}
-	if got, want := len(parthianReadings), 22; got != want {
-		t.Fatalf("Parthian readings count = %d, want %d", got, want)
-	}
-	if got, want := len(pahlaviReadings), 19; got != want {
-		t.Fatalf("Pahlavi readings count = %d, want %d", got, want)
-	}
 	tests := []struct {
 		language string
 		char     rune
@@ -28,6 +16,7 @@ func TestAncientScriptReadings(t *testing.T) {
 		{"Parthian", 0x10B55, "t"},
 		{"Pahlavi", 0x10B60, "a"},
 		{"Pahlavi", 0x10B72, "t"},
+		{"Pahlavi", 0x10B78, "one"},
 	}
 	for _, test := range tests {
 		if got := phoneticFor(test.language, test.char); got != test.want {
