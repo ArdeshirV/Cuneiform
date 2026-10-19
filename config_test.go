@@ -17,3 +17,19 @@ func TestEmbeddedConfigurationLoadsLanguageAndReadingAssets(t *testing.T) {
 		t.Fatal("embedded app settings are incomplete")
 	}
 }
+
+func TestConfiguredThemeColorsAreValid(t *testing.T) {
+	if _, err := parseThemeColor(configString("selection_highlight")); err != nil {
+		t.Fatalf("parse selection color: %v", err)
+	}
+	for themeName, palette := range appConfig.ThemePalettes {
+		for _, value := range []string{palette.Background, palette.Input, palette.Button, palette.Primary, palette.Foreground, palette.Hover} {
+			if value == "" {
+				continue
+			}
+			if _, err := parseThemeColor(value); err != nil {
+				t.Errorf("theme %q has invalid color %q: %v", themeName, value, err)
+			}
+		}
+	}
+}

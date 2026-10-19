@@ -25,12 +25,12 @@ func decodeDocument(data []byte) (string, textEncoding, error) {
 		return decodeUTF16(data[2:], encodingUTF16BE, binary.BigEndian)
 	case len(data) >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF:
 		if !utf8.Valid(data[3:]) {
-			return "", encodingUTF8BOM, errors.New("file contains invalid UTF-8")
+			return "", encodingUTF8BOM, errors.New(configString("document_invalid_utf8_bom"))
 		}
 		return string(data[3:]), encodingUTF8BOM, nil
 	default:
 		if !utf8.Valid(data) {
-			return "", encodingUTF8, errors.New("file is not valid UTF-8 and has no recognized Unicode byte-order mark")
+			return "", encodingUTF8, errors.New(configString("document_invalid_utf8"))
 		}
 		return string(data), encodingUTF8, nil
 	}
@@ -38,7 +38,7 @@ func decodeDocument(data []byte) (string, textEncoding, error) {
 
 func decodeUTF16(data []byte, encoding textEncoding, order binary.ByteOrder) (string, textEncoding, error) {
 	if len(data)%2 != 0 {
-		return "", encoding, errors.New("UTF-16 file has an incomplete code unit")
+		return "", encoding, errors.New(configString("document_incomplete_utf16_unit"))
 	}
 	units := make([]uint16, len(data)/2)
 	for i := range units {
@@ -47,11 +47,11 @@ func decodeUTF16(data []byte, encoding textEncoding, order binary.ByteOrder) (st
 	for i := 0; i < len(units); i++ {
 		if 0xD800 <= units[i] && units[i] <= 0xDBFF {
 			if i+1 >= len(units) || units[i+1] < 0xDC00 || units[i+1] > 0xDFFF {
-				return "", encoding, fmt.Errorf("invalid UTF-16 surrogate pair at code unit %d", i)
+				return "", encoding, fmt.Errorf(configString("document_invalid_utf16_surrogate"), i)
 			}
 			i++
 		} else if 0xDC00 <= units[i] && units[i] <= 0xDFFF {
-			return "", encoding, fmt.Errorf("unpaired UTF-16 low surrogate at code unit %d", i)
+			return "", encoding, fmt.Errorf(configString("document_unpaired_utf16_surrogate"), i)
 		}
 	}
 	return string(utf16.Decode(units)), encoding, nil
@@ -82,12 +82,12 @@ func encodeDocument(text string, encoding textEncoding) []byte {
 func (encoding textEncoding) String() string {
 	switch encoding {
 	case encodingUTF8BOM:
-		return "UTF-8 with BOM"
+		return configString("encoding_utf8_bom")
 	case encodingUTF16LE:
-		return "UTF-16 LE"
+		return configString("encoding_utf16_le")
 	case encodingUTF16BE:
-		return "UTF-16 BE"
+		return configString("encoding_utf16_be")
 	default:
-		return "UTF-8"
+		return configString("encoding_utf8")
 	}
 }

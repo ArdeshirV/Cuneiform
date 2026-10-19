@@ -16,26 +16,27 @@ var configurationAssets embed.FS
 
 type appConfiguration struct {
 	Application struct {
-		ID         string `json:"id"`
-		Name       string `json:"name"`
-		Version    string `json:"version"`
-		Icon       string `json:"icon"`
-		ProjectURL string `json:"project_url"`
-		Copyright  string `json:"copyright"`
+		ID          string   `json:"id"`
+		Name        string   `json:"name"`
+		Version     string   `json:"version"`
+		Icon        string   `json:"icon"`
+		ProjectURL  string   `json:"project_url"`
+		Copyright   string   `json:"copyright"`
 		ProjectLink *url.URL `json:"-"`
 	} `json:"application"`
-	Strings         map[string]string       `json:"strings"`
-	Numbers         map[string]float64      `json:"numbers"`
-	Preferences     map[string]string       `json:"preferences"`
-	ThemeOptions    []string                `json:"theme_options"`
-	FontSizeOptions []string                `json:"font_size_options"`
-	ThemePalettes   map[string]themePalette `json:"theme_palettes"`
-	RTLScripts      []string                `json:"rtl_scripts"`
-	ExcludedScripts []string                `json:"excluded_unicode_scripts"`
-	LanguageNameReplacements [][2]string     `json:"language_name_replacements"`
-	LanguageNormalizationReplacements [][2]string `json:"language_normalization_replacements"`
-	Languages       languageConfiguration   `json:"-"`
-	Readings        map[string]readingSet   `json:"-"`
+	Strings                           map[string]string       `json:"strings"`
+	Numbers                           map[string]float64      `json:"numbers"`
+	Preferences                       map[string]string       `json:"preferences"`
+	ThemeOptions                      []string                `json:"theme_options"`
+	FontSizeOptions                   []string                `json:"font_size_options"`
+	ThemePalettes                     map[string]themePalette `json:"theme_palettes"`
+	RTLDefault                        bool                    `json:"right_to_left_default"`
+	RTLScripts                        []string                `json:"rtl_scripts"`
+	ExcludedScripts                   []string                `json:"excluded_unicode_scripts"`
+	LanguageNameReplacements          [][2]string             `json:"language_name_replacements"`
+	LanguageNormalizationReplacements [][2]string             `json:"language_normalization_replacements"`
+	Languages                         languageConfiguration   `json:"-"`
+	Readings                          map[string]readingSet   `json:"-"`
 }
 
 type themePalette struct {

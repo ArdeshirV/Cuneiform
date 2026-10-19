@@ -1,0 +1,59 @@
+Unicode Script Fallback
+=======================
+
+The bundled UnicodeScriptFallback.ttf is a merged font renamed "Cuneiform
+Script Fallback". It includes Noto Naskh Arabic/Persian shaping and Noto fonts
+for ancient and historic scripts. The Noto font software is copyright Google
+LLC and licensed under SIL Open Font License 1.1. The full license is in
+LICENSE.txt. Noto source: https://github.com/notofonts
+
+Noto source faces included in the expanded historic-script build:
+
+Noto Sans Adlam
+Noto Sans Anatolian Hieroglyphs
+Noto Sans Avestan
+Noto Sans Brahmi
+Noto Sans Carian
+Noto Sans Caucasian Albanian
+Noto Sans Coptic
+Noto Sans Cuneiform
+Noto Sans Cypriot
+Noto Sans Egyptian Hieroglyphs
+Noto Sans Elbasan
+Noto Sans Elymaic
+Noto Sans Gothic
+Noto Sans Hatran
+Noto Sans Imperial Aramaic
+Noto Sans Inscriptional Pahlavi
+Noto Sans Inscriptional Parthian
+Noto Sans Kharoshthi
+Noto Sans Linear A
+Noto Sans Linear B
+Noto Sans Lycian
+Noto Sans Lydian
+Noto Sans Mandaic
+Noto Sans Manichaean
+Noto Sans Mayan Numerals
+Noto Sans Meroitic
+Noto Sans Nabataean
+Noto Sans Ogham
+Noto Sans Old Hungarian
+Noto Sans Old Italic
+Noto Sans Old North Arabian
+Noto Sans Old Persian
+Noto Sans Old Permic
+Noto Sans Old Sogdian
+Noto Sans Old South Arabian
+Noto Sans Old Turkic
+Noto Sans Palmyrene
+Noto Sans Phoenician
+Noto Sans Psalter Pahlavi
+Noto Sans Runic
+Noto Sans Samaritan
+Noto Sans Siddham
+Noto Sans Sogdian
+Noto Sans Ugaritic
+
+Other named fonts such as Wistaspa, Avesta, and ave_bl_l4 are not bundled
+because their redistribution terms could not be verified. The bundled OFL
+licensed Noto Sans Avestan font provides Avestan Unicode glyph coverage.

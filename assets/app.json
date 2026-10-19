@@ -34,18 +34,15 @@
     "font_load_error": "load saved font: %w",
     "font_file_too_large": "font file exceeds the %d MiB limit",
     "font_file_invalid": "invalid TrueType/OpenType font: %w",
-    "project_url_invalid": "invalid project URL in app.json: %w",
     "font_file_default_name": "custom-font.ttf",
     "font_bundled_name": "UnicodeScriptFallback.ttf",
     "font_bundled_button": "Use bundled font",
     "font_settings_label": "Text size",
     "theme_settings_label": "Theme",
-    "font_dialog_title": "Choose a font",
     "font_extension_ttf": ".ttf",
     "font_extension_otf": ".otf",
     "settings_close": "Close",
     "about_version": "Version: ",
-    "about_title": "Cuneiform",
     "about_dialog_title": "About",
     "close": "Close",
     "save_changes_title": "Unsaved changes",
@@ -59,7 +56,6 @@
     "clipboard_select_all": "Select all",
     "phonetic_space": "space",
     "phonetic_unknown_format": "%X",
-    "font_fallback_family": "Cuneiform Script Fallback",
     "language_sample_format": "%s — %s",
     "key_label_separator": " ",
     "invalid_utf8_replacement": "�",
@@ -69,7 +65,16 @@
     "color_hex_prefix": "#",
     "unicode_codepoint_prefix": "U+",
     "theme_color_invalid": "invalid theme color %q: %w",
-    "theme_color_hex_digits": "expected %d hexadecimal digits"
+    "theme_color_hex_digits": "expected %d hexadecimal digits",
+    "encoding_utf8": "UTF-8",
+    "encoding_utf8_bom": "UTF-8 with BOM",
+    "encoding_utf16_le": "UTF-16 LE",
+    "encoding_utf16_be": "UTF-16 BE",
+    "document_invalid_utf8_bom": "file contains invalid UTF-8",
+    "document_invalid_utf8": "file is not valid UTF-8 and has no recognized Unicode byte-order mark",
+    "document_incomplete_utf16_unit": "UTF-16 file has an incomplete code unit",
+    "document_invalid_utf16_surrogate": "invalid UTF-16 surrogate pair at code unit %d",
+    "document_unpaired_utf16_surrogate": "unpaired UTF-16 low surrogate at code unit %d"
   },
   "numbers": {
     "keyboard_columns": 5,
@@ -77,7 +82,7 @@
     "initial_window_height": 760,
     "default_editor_fraction": 0.3,
     "default_font_file_limit_mib": 20,
-    "default_font_file_limit_bytes": 20971520,
+    "bytes_per_mib": 1048576,
     "splitter_save_interval_millis": 250,
     "font_scale_small": 0.85,
     "font_scale_medium": 1.0,
@@ -97,9 +102,6 @@
     "color_blue_shift": 8,
     "numeric_base_hex": 16,
     "unicode_scalar_bit_size": 32,
-    "splitter_min_offset": 0.0,
-    "splitter_max_offset": 1.0,
-    "rtl_default": 1,
     "language_preview_characters": 3
   },
   "preferences": {
@@ -120,6 +122,7 @@
     "Medium",
     "Large"
   ],
+  "right_to_left_default": true,
   "theme_palettes": {
     "Metallic Dark": {
       "variant": "dark",

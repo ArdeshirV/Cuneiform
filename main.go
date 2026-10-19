@@ -66,7 +66,7 @@ func main() {
 	languageSelect.SetSelected(languageOptionName(languages[0]))
 	keyboard := newKeyboard(languages[0], e.text)
 	rightToLeft := widget.NewCheck(configString("right_to_left"), nil)
-	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), configNumber("rtl_default") != 0))
+	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), appConfig.RTLDefault))
 	e.text.SetRightToLeft(rightToLeft.Checked)
 	rightToLeft.OnChanged = func(enabled bool) {
 		application.Preferences().SetBool(preferenceKey("right_to_left"), enabled)
@@ -344,7 +344,7 @@ func (e *editor) showFontDialog() {
 			return
 		}
 		defer reader.Close()
-		fontLimit := int64(configNumber("default_font_file_limit_bytes"))
+		fontLimit := int64(configNumber("default_font_file_limit_mib") * configNumber("bytes_per_mib"))
 		fontData, err := io.ReadAll(io.LimitReader(reader, fontLimit+1))
 		if err != nil {
 			dialog.ShowError(err, e.window)
@@ -400,7 +400,7 @@ func (e *editor) showAbout() {
 	icon := canvas.NewImageFromResource(fyne.NewStaticResource(appConfig.Application.Icon, appIconBytes))
 	icon.FillMode = canvas.ImageFillContain
 	icon.SetMinSize(fyne.NewSize(float32(configNumber("about_icon_size")), float32(configNumber("about_icon_size"))))
-	appName := canvas.NewText(configString("about_title"), theme.ForegroundColor())
+	appName := canvas.NewText(appConfig.Application.Name, theme.ForegroundColor())
 	appName.TextSize = theme.Size(theme.SizeNameText) * float32(configNumber("about_name_font_multiplier"))
 	version := canvas.NewText(configString("about_version")+appConfig.Application.Version, theme.ForegroundColor())
 	version.TextSize = theme.Size(theme.SizeNameCaptionText)
