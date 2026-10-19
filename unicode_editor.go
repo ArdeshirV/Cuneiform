@@ -23,10 +23,16 @@ type unicodeEditor struct {
 	anchor      int
 	shiftDown   bool
 	focused     bool
-	undoStack   []string
-	redoStack   []string
+	undoStack   []editAction
+	redoStack   []editAction
 	richText    *widget.RichText
 	scroll      *container.Scroll
+}
+
+type editAction struct {
+	position int
+	removed  string
+	inserted string
 }
 
 func newUnicodeEditor() *unicodeEditor {
@@ -119,7 +125,7 @@ func (e *unicodeEditor) refreshText() {
 		})
 	}
 	appendCursor := func() {
-		if e.focused && start == end {
+		if e.focused {
 			appendSegment("|", false)
 		}
 	}
@@ -369,19 +375,25 @@ func (e *unicodeEditor) replaceRange(start, end int, value string) {
 	if start > end {
 		start, end = end, start
 	}
+	removed := string(runes[start:end])
+	if removed == value {
+		return
+	}
+	action := editAction{position: start, removed: removed, inserted: value}
+	e.undoStack = append(e.undoStack, action)
+	e.redoStack = nil
+	e.applyTextChange(start, end, value, start+len([]rune(value)))
+}
+
+func (e *unicodeEditor) applyTextChange(start, end int, value string, cursor int) {
+	runes := []rune(e.Text)
 	insert := []rune(value)
 	updated := make([]rune, 0, len(runes)-(end-start)+len(insert))
 	updated = append(updated, runes[:start]...)
 	updated = append(updated, insert...)
 	updated = append(updated, runes[end:]...)
-	nextText := string(updated)
-	if nextText == e.Text {
-		return
-	}
-	e.undoStack = append(e.undoStack, e.Text)
-	e.redoStack = nil
-	e.Text = nextText
-	e.cursor = start + len(insert)
+	e.Text = string(updated)
+	e.cursor = cursor
 	e.anchor = -1
 	e.Refresh()
 	if e.OnChanged != nil {
@@ -393,30 +405,22 @@ func (e *unicodeEditor) undo() {
 	if len(e.undoStack) == 0 {
 		return
 	}
-	e.redoStack = append(e.redoStack, e.Text)
-	e.Text = e.undoStack[len(e.undoStack)-1]
+	action := e.undoStack[len(e.undoStack)-1]
 	e.undoStack = e.undoStack[:len(e.undoStack)-1]
-	e.cursor = len([]rune(e.Text))
-	e.anchor = -1
-	e.Refresh()
-	if e.OnChanged != nil {
-		e.OnChanged(e.Text)
-	}
+	e.redoStack = append(e.redoStack, action)
+	insertedLen := len([]rune(action.inserted))
+	e.applyTextChange(action.position, action.position+insertedLen, action.removed, action.position+len([]rune(action.removed)))
 }
 
 func (e *unicodeEditor) redo() {
 	if len(e.redoStack) == 0 {
 		return
 	}
-	e.undoStack = append(e.undoStack, e.Text)
-	e.Text = e.redoStack[len(e.redoStack)-1]
+	action := e.redoStack[len(e.redoStack)-1]
 	e.redoStack = e.redoStack[:len(e.redoStack)-1]
-	e.cursor = len([]rune(e.Text))
-	e.anchor = -1
-	e.Refresh()
-	if e.OnChanged != nil {
-		e.OnChanged(e.Text)
-	}
+	e.undoStack = append(e.undoStack, action)
+	removedLen := len([]rune(action.removed))
+	e.applyTextChange(action.position, action.position+removedLen, action.inserted, action.position+len([]rune(action.inserted)))
 }
 
 func (e *unicodeEditor) copySelection() {
