@@ -41,3 +41,13 @@ func TestUnicodeEditorRTLChangesAlignmentAndArrowDirection(t *testing.T) {
 		t.Fatalf("cursor after right arrow in RTL mode = %d, want 1", editor.cursor)
 	}
 }
+
+func TestUnicodeEditorDoesNotDirtyOnNoOpDelete(t *testing.T) {
+	editor := &unicodeEditor{Text: "x", cursor: 0, anchor: -1}
+	changed := false
+	editor.OnChanged = func(string) { changed = true }
+	editor.TypedKey(&fyne.KeyEvent{Name: fyne.KeyBackspace})
+	if changed {
+		t.Fatal("backspace at the beginning reported a text change")
+	}
+}

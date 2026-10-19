@@ -60,6 +60,8 @@ func (e *unicodeEditor) SetText(text string) {
 	e.Text = text
 	e.cursor = len([]rune(text))
 	e.anchor = -1
+	e.undoStack = nil
+	e.redoStack = nil
 	e.Refresh()
 }
 
@@ -367,14 +369,18 @@ func (e *unicodeEditor) replaceRange(start, end int, value string) {
 	if start > end {
 		start, end = end, start
 	}
-	e.undoStack = append(e.undoStack, e.Text)
-	e.redoStack = nil
 	insert := []rune(value)
 	updated := make([]rune, 0, len(runes)-(end-start)+len(insert))
 	updated = append(updated, runes[:start]...)
 	updated = append(updated, insert...)
 	updated = append(updated, runes[end:]...)
-	e.Text = string(updated)
+	nextText := string(updated)
+	if nextText == e.Text {
+		return
+	}
+	e.undoStack = append(e.undoStack, e.Text)
+	e.redoStack = nil
+	e.Text = nextText
 	e.cursor = start + len(insert)
 	e.anchor = -1
 	e.Refresh()
@@ -494,12 +500,6 @@ func (e *unicodeEditor) clamp(value, maximum int) int {
 		return maximum
 	}
 	return value
-}
-
-func (e *unicodeEditor) scrollToBottom() {
-	if e.scroll != nil {
-		e.scroll.ScrollToBottom()
-	}
 }
 
 type unicodeEditorRenderer struct {
