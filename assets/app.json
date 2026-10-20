@@ -99,6 +99,7 @@
     "font_scale_large": 1.15,
     "about_icon_size": 72,
     "about_name_font_multiplier": 2.1,
+    "about_close_button_width": 140,
     "donation_image_size": 168,
     "donation_title_font_multiplier": 2,
     "editor_minimum_width": 100,

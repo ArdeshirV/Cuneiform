@@ -520,6 +520,14 @@ func (e *editor) showAbout() {
 			widget.NewLabel(copyrightAfter),
 		)
 	}
+	var aboutDialog dialog.Dialog
+	closeButton := widget.NewButton(configString("close"), func() {
+		aboutDialog.Hide()
+	})
+	closeButtonRow := container.NewCenter(container.NewGridWrap(
+		fyne.NewSize(float32(configNumber("about_close_button_width")), closeButton.MinSize().Height),
+		closeButton,
+	))
 	details := container.NewVBox(
 		container.NewHBox(icon, appDetails),
 		copyrightRow,
@@ -528,8 +536,10 @@ func (e *editor) showAbout() {
 		widget.NewSeparator(),
 		widget.NewLabel(configString("project_link_description")),
 		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
+		closeButtonRow,
 	)
-	dialog.NewCustom(configString("about_dialog_title"), configString("close"), details, e.window).Show()
+	aboutDialog = dialog.NewCustomWithoutButtons(configString("about_dialog_title"), details, e.window)
+	aboutDialog.Show()
 }
 
 func (e *editor) requestClose() {
