@@ -28,6 +28,9 @@ var appIconBytes []byte
 //go:embed assets/fonts/UnicodeScriptFallback.ttf
 var unicodeFontBytes []byte
 
+//go:embed assets/ethereum-donation.png
+var ethereumDonationImageBytes []byte
+
 type editor struct {
 	application fyne.App
 	window      fyne.Window
@@ -491,9 +494,38 @@ func (e *editor) showAbout() {
 	version := canvas.NewText(configString("about_version")+appConfig.Application.Version, theme.ForegroundColor())
 	version.TextSize = theme.Size(theme.SizeNameCaptionText)
 	appDetails := container.NewVBox(appName, version)
+	donationImage := canvas.NewImageFromResource(fyne.NewStaticResource(configString("donation_image_name"), ethereumDonationImageBytes))
+	donationImage.FillMode = canvas.ImageFillContain
+	donationImage.SetMinSize(fyne.NewSquareSize(float32(configNumber("donation_image_size"))))
+	donationTitle := canvas.NewText(configString("donation_title"), theme.ForegroundColor())
+	donationTitle.TextSize = theme.Size(theme.SizeNameText) * float32(configNumber("donation_title_font_multiplier"))
+	donationTitle.TextStyle.Bold = true
+	donationSection := container.NewVBox(
+		donationTitle,
+		widget.NewLabel(configString("donation_description")),
+		container.NewCenter(donationImage),
+		container.NewHBox(
+			widget.NewLabel(configString("donation_address")),
+			widget.NewButton(configString("clipboard_copy"), func() {
+				e.window.Clipboard().SetContent(configString("donation_address"))
+			}),
+		),
+	)
+	copyrightBefore, copyrightAfter, hasAuthorHandle := strings.Cut(appConfig.Application.Copyright, appConfig.Application.AuthorHandle)
+	copyrightRow := fyne.CanvasObject(widget.NewLabel(appConfig.Application.Copyright))
+	if hasAuthorHandle {
+		copyrightRow = container.NewHBox(
+			widget.NewLabel(copyrightBefore),
+			widget.NewHyperlink(appConfig.Application.AuthorHandle, appConfig.Application.AuthorLink),
+			widget.NewLabel(copyrightAfter),
+		)
+	}
 	details := container.NewVBox(
 		container.NewHBox(icon, appDetails),
-		widget.NewLabel(appConfig.Application.Copyright),
+		copyrightRow,
+		widget.NewSeparator(),
+		donationSection,
+		widget.NewSeparator(),
 		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
 	)
 	dialog.NewCustom(configString("about_dialog_title"), configString("close"), details, e.window).Show()

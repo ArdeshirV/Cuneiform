@@ -16,13 +16,16 @@ var configurationAssets embed.FS
 
 type appConfiguration struct {
 	Application struct {
-		ID          string   `json:"id"`
-		Name        string   `json:"name"`
-		Version     string   `json:"version"`
-		Icon        string   `json:"icon"`
-		ProjectURL  string   `json:"project_url"`
-		Copyright   string   `json:"copyright"`
-		ProjectLink *url.URL `json:"-"`
+		ID           string   `json:"id"`
+		Name         string   `json:"name"`
+		Version      string   `json:"version"`
+		Icon         string   `json:"icon"`
+		ProjectURL   string   `json:"project_url"`
+		AuthorHandle string   `json:"author_handle"`
+		AuthorURL    string   `json:"author_url"`
+		Copyright    string   `json:"copyright"`
+		ProjectLink  *url.URL `json:"-"`
+		AuthorLink   *url.URL `json:"-"`
 	} `json:"application"`
 	Strings                           map[string]string       `json:"strings"`
 	Numbers                           map[string]float64      `json:"numbers"`
@@ -103,6 +106,14 @@ func loadAppConfiguration() (appConfiguration, error) {
 		return appConfiguration{}, fmt.Errorf("application project link is invalid")
 	}
 	config.Application.ProjectLink = projectLink
+	authorLink, err := url.Parse(config.Application.AuthorURL)
+	if err != nil || authorLink.Scheme == "" || authorLink.Host == "" {
+		return appConfiguration{}, fmt.Errorf("application author link is invalid")
+	}
+	if config.Application.AuthorHandle == "" || !strings.Contains(config.Application.Copyright, config.Application.AuthorHandle) {
+		return appConfiguration{}, fmt.Errorf("application copyright does not contain the author handle")
+	}
+	config.Application.AuthorLink = authorLink
 	number := func(key string) int {
 		return int(config.Numbers[key])
 	}

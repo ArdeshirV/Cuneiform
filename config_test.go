@@ -13,6 +13,12 @@ func TestEmbeddedConfigurationLoadsLanguageAndReadingAssets(t *testing.T) {
 	if got := config.Readings["Avesta"].Ranges[0].Readings[0]; got != "a" {
 		t.Fatalf("first Avesta reading = %q, want %q", got, "a")
 	}
+	if got, want := config.Application.AuthorLink.String(), "https://ardeshirv.github.io/"; got != want {
+		t.Fatalf("author link = %q, want %q", got, want)
+	}
+	if got, want := config.Application.AuthorHandle, "@ArdeshirV"; got != want {
+		t.Fatalf("author handle = %q, want %q", got, want)
+	}
 	if len(config.ThemePalettes) == 0 || len(config.Strings) == 0 || len(config.Numbers) == 0 {
 		t.Fatal("embedded app settings are incomplete")
 	}

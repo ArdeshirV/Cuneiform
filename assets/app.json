@@ -5,6 +5,8 @@
     "version": "1.0",
     "icon": "Icon.png",
     "project_url": "https://github.com/ArdeshirV/cuneiform",
+    "author_handle": "@ArdeshirV",
+    "author_url": "https://ardeshirv.github.io/",
     "copyright": "Copyright (c) 2026 @ArdeshirV, Licenced under GPLv3+"
   },
   "strings": {
@@ -45,6 +47,10 @@
     "settings_close": "Close",
     "about_version": "Version: ",
     "about_dialog_title": "About",
+    "donation_title": "Please Donate!",
+    "donation_description": "We truly appreciate and thank you for any donation you can give to our project",
+    "donation_address": "Ethereum 0x6E6465394D14975956cd1BD37ab4E35F2C60300E",
+    "donation_image_name": "ethereum-donation.png",
     "close": "Close",
     "save_changes_title": "Unsaved changes",
     "save_changes_message": "Do you want to save changes?",
@@ -91,6 +97,8 @@
     "font_scale_large": 1.15,
     "about_icon_size": 72,
     "about_name_font_multiplier": 2.1,
+    "donation_image_size": 168,
+    "donation_title_font_multiplier": 2,
     "editor_minimum_width": 100,
     "editor_minimum_height_lines": 3,
     "caret_width_multiplier": 2,
