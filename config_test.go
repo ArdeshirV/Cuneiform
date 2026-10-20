@@ -19,6 +19,9 @@ func TestEmbeddedConfigurationLoadsLanguageAndReadingAssets(t *testing.T) {
 	if got, want := config.Application.AuthorHandle, "@ArdeshirV"; got != want {
 		t.Fatalf("author handle = %q, want %q", got, want)
 	}
+	if got, want := config.Strings["donation_clipboard_address"], "0x6E6465394D14975956cd1BD37ab4E35F2C60300E"; got != want {
+		t.Fatalf("donation clipboard address = %q, want %q", got, want)
+	}
 	if len(config.ThemePalettes) == 0 || len(config.Strings) == 0 || len(config.Numbers) == 0 {
 		t.Fatal("embedded app settings are incomplete")
 	}

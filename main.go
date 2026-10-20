@@ -507,7 +507,7 @@ func (e *editor) showAbout() {
 		container.NewHBox(
 			widget.NewLabel(configString("donation_address")),
 			widget.NewButton(configString("clipboard_copy"), func() {
-				e.window.Clipboard().SetContent(configString("donation_address"))
+				e.window.Clipboard().SetContent(configString("donation_clipboard_address"))
 			}),
 		),
 	)

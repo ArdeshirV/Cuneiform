@@ -50,6 +50,7 @@
     "donation_title": "Please Donate!",
     "donation_description": "We truly appreciate and thank you for any donation you can give to our project",
     "donation_address": "Ethereum 0x6E6465394D14975956cd1BD37ab4E35F2C60300E",
+    "donation_clipboard_address": "0x6E6465394D14975956cd1BD37ab4E35F2C60300E",
     "donation_image_name": "ethereum-donation.png",
     "close": "Close",
     "save_changes_title": "Unsaved changes",
