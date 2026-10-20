@@ -45,6 +45,30 @@ type editor struct {
 	loading     bool
 }
 
+type tightVerticalLayout struct{}
+
+func (tightVerticalLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	y := float32(0)
+	for _, object := range objects {
+		height := object.MinSize().Height
+		object.Resize(fyne.NewSize(size.Width, height))
+		object.Move(fyne.NewPos(0, y))
+		y += height
+	}
+}
+
+func (tightVerticalLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	var size fyne.Size
+	for _, object := range objects {
+		minimum := object.MinSize()
+		if minimum.Width > size.Width {
+			size.Width = minimum.Width
+		}
+		size.Height += minimum.Height
+	}
+	return size
+}
+
 func keyboardColumns() int {
 	return int(configNumber("keyboard_columns"))
 }
@@ -501,8 +525,10 @@ func (e *editor) showAbout() {
 	donationTitle.TextSize = theme.Size(theme.SizeNameText) * float32(configNumber("donation_title_font_multiplier"))
 	donationTitle.TextStyle.Bold = true
 	donationSection := container.NewVBox(
-		donationTitle,
-		widget.NewLabel(configString("donation_description")),
+		container.New(tightVerticalLayout{},
+			donationTitle,
+			widget.NewLabel(configString("donation_description")),
+		),
 		container.NewCenter(donationImage),
 		container.NewHBox(
 			widget.NewLabel(configString("donation_address")),
@@ -534,8 +560,10 @@ func (e *editor) showAbout() {
 		widget.NewSeparator(),
 		donationSection,
 		widget.NewSeparator(),
-		widget.NewLabel(configString("project_link_description")),
-		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
+		container.New(tightVerticalLayout{},
+			widget.NewLabel(configString("project_link_description")),
+			widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
+		),
 		closeButtonRow,
 	)
 	aboutDialog = dialog.NewCustomWithoutButtons(configString("about_dialog_title"), details, e.window)
