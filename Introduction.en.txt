@@ -1,0 +1,51 @@
+## Introducing the Cuneiform Project
+
+**Cuneiform is a tool for writing and preserving texts in ancient scripts, particularly those associated with ancient Iran.** It allows you to type characters that are not available on ordinary keyboards and save them as digital text.
+
+Project repository: [github.com/ArdeshirV/cuneiform](https://github.com/ArdeshirV/cuneiform)
+
+### 1. What does this software do?
+
+- **Writing in ancient scripts:** Including Avestan, Old Persian cuneiform, Middle Persian (Pahlavi), and Parthian.
+- **A dedicated keyboard:** Selecting characters through an on-screen keyboard, with their pronunciations or readings displayed alongside them.
+- **Text editing and storage:** Opening, editing, and saving text documents with UTF-8 and UTF-16 support.
+- **Cross-platform compatibility:** Running on Linux, Windows, and Android.
+- **Support for other scripts:** Accessing a broad collection of characters and scripts available in the Unicode standard.
+
+The project is developed in Go using the Fyne graphical framework and is released under the open-source GPL-3.0 license.
+
+### 2. What is its cultural and historical significance?
+
+The project's principal value lies in **making it easier to write and digitally preserve languages and scripts that are not adequately supported by conventional modern tools.**
+
+Imagine a researcher who wants to write an Avestan word, a phrase in Pahlavi, or a name in Old Persian cuneiform. An ordinary keyboard was not designed for this purpose. This software helps remove that obstacle.
+
+One important distinction, however, must be made: **this is a writing and editing tool, not a translator of ancient languages or software for deciphering inscriptions.** Moreover, Old Persian cuneiform is distinct from the cuneiform scripts used in ancient Mesopotamia.
+
+### 3. How would I introduce it to someone interested in ancient Iranian culture?
+
+I would introduce it this way:
+
+> **Ancient Words in a Digital World**
+>
+> Many ancient Iranian languages and scripts—from Avestan and Pahlavi to Old Persian cuneiform—are an essential part of our cultural heritage. Yet writing in these historical scripts is not easy with the tools we commonly use today.
+>
+> The Cuneiform project makes it possible for enthusiasts, researchers, and students to type these historical characters directly, compose their own texts, and preserve them digitally.
+>
+> Its purpose is to connect the written heritage of the past with the tools of the present, allowing these scripts to be used not only in museums and history books, but also on computers and mobile devices.
+
+### 4. My final assessment
+
+In my view, the value of this project lies less in its technical complexity than in **its cultural purpose and its potential to make historical scripts more accessible.**
+
+Three aspects are particularly important:
+
+- **Practical usefulness:** It makes writing and saving ancient characters directly much easier.
+- **Potential for development:** It could provide a foundation for educational materials, collections of written examples, and research tools.
+- **Open access:** The GPL-3.0 license permits the software to be studied, modified, and developed further, subject to the terms of that license.
+
+Of course, the software is not, by itself, a linguistic research tool or an authoritative source for the verification of ancient texts. The scholarly value of the texts it produces still depends on the accuracy of their characters, readings, and content.
+
+**My recommendation:** If you want to introduce this project to a general audience, focus less on its programming language or technical details and more on this idea:
+
+**“A small tool for keeping ancient scripts alive in the digital world.”**
