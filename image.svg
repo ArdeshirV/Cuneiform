@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="آتشدان زرتشتی میان سروها و حوض آبی">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#f8d98d"/>
+      <stop offset="1" stop-color="#fff1c9"/>
+    </linearGradient>
+    <linearGradient id="water" x2="0" y2="1">
+      <stop stop-color="#39c8d1"/>
+      <stop offset="1" stop-color="#167db2"/>
+    </linearGradient>
+    <linearGradient id="fire" x2="0" y2="1">
+      <stop stop-color="#fff59b"/>
+      <stop offset=".55" stop-color="#ffad32"/>
+      <stop offset="1" stop-color="#ed5527"/>
+    </linearGradient>
+  </defs>
+
+  <!-- آسمان و خورشید -->
+  <rect width="512" height="512" rx="36" fill="url(#sky)"/>
+  <circle cx="256" cy="89" r="34" fill="#f7a93b"/>
+  <circle cx="256" cy="89" r="25" fill="#ffd565"/>
+
+  <!-- سروها -->
+  <g fill="#14755a" stroke="#0d594b" stroke-width="4" stroke-linejoin="round">
+    <path d="M81 282 119 211 99 211 132 150 114 150 151 91 188 150 170 150 203 211 183 211 218 282Z"/>
+    <path d="M294 282 329 211 310 211 343 150 325 150 362 91 399 150 381 150 414 211 395 211 431 282Z"/>
+  </g>
+  <g fill="#35a66f">
+    <path d="m128 155 23-39 24 39h-12l27 49h-16l22 42h-74l22-42h-16l27-49z"/>
+    <path d="m340 155 22-39 24 39h-12l27 49h-16l22 42h-74l22-42h-16l27-49z"/>
+  </g>
+  <g fill="#473d35">
+    <rect x="146" y="268" width="12" height="28" rx="4"/>
+    <rect x="357" y="268" width="12" height="28" rx="4"/>
+  </g>
+
+  <!-- پرندگان روی سروها -->
+  <g fill="#243e46">
+    <path d="M135 148q9-13 18 0 9-13 18 0-9 7-18 1-9 6-18-1z"/>
+    <path d="M355 147q8-12 16 0 8-12 16 0-8 7-16 1-8 6-16-1z"/>
+    <path d="M391 184q7-10 14 0 7-10 14 0-7 6-14 1-7 5-14-1z"/>
+  </g>
+
+  <!-- حوض آب -->
+  <ellipse cx="256" cy="390" rx="218" ry="87" fill="#d99a4b"/>
+  <ellipse cx="256" cy="379" rx="207" ry="78" fill="url(#water)" stroke="#fff0c8" stroke-width="8"/>
+  <ellipse cx="256" cy="378" rx="188" ry="63" fill="none" stroke="#87e6df" stroke-width="3" opacity=".8"/>
+  <path d="M91 379q30-13 60 0t60 0M301 382q29-13 58 0t58 0" fill="none" stroke="#d4ffff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+
+  <!-- سکوی مرکزی و آتشدان -->
+  <ellipse cx="256" cy="365" rx="85" ry="34" fill="#d6b17a" stroke="#815d43" stroke-width="5"/>
+  <path d="M191 330h130l-12 47H203z" fill="#e8d1a6" stroke="#815d43" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M207 343h98v25h-98z" fill="#c39a68"/>
+  <path d="M204 324q52 18 104 0l-8 22h-88z" fill="#8e5c3b" stroke="#68452f" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M220 322q-13-24 5-45 0 18 12 24-3-29 20-54 0 29 15 39 13 10 2 36z" fill="url(#fire)" stroke="#e05d24" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M243 319q-7-15 4-27 1 11 9 14 8 5 2 13z" fill="#fff7bb"/>
+
+  <!-- پروانه‌ها کنار حوض -->
+  <g stroke="#844e8f" stroke-width="2">
+    <path d="M106 352q-18-20-20-3t17 12q-17 12-3 19t13-17q8 18 18 8t-9-18q17-5 8-15t-24 14z" fill="#f6a5cf"/>
+    <path d="M399 349q-16-18-19-2t16 11q-15 11-2 17t12-15q8 16 17 7t-8-16q15-5 7-14t-23 12z" fill="#ffdc65"/>
+  </g>
+  <g stroke="#543f55" stroke-width="2" stroke-linecap="round">
+    <path d="m111 354 2 20M404 351l1 18"/>
+  </g>
+
+  <!-- کاشی‌کاری سادهٔ ایرانی روی پایه -->
+  <g fill="#268d87">
+    <path d="M220 352l7-7 7 7-7 7zM249 352l7-7 7 7-7 7zM278 352l7-7 7 7-7 7z"/>
+  </g>
+  <g fill="#f3c95c">
+    <circle cx="242" cy="364" r="3"/><circle cx="270" cy="364" r="3"/>
+  </g>
+</svg>

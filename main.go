@@ -31,7 +31,7 @@ var unicodeFontBytes []byte
 type editor struct {
 	application fyne.App
 	window      fyne.Window
-	text        *unicodeEditor
+	text        *widget.Entry
 	status      *widget.Label
 	encoding    textEncoding
 	uri         fyne.URI
@@ -52,7 +52,7 @@ func main() {
 
 	e := &editor{application: application, window: window, encoding: encodingUTF8}
 	e.applySettings()
-	e.text = newUnicodeEditor()
+	e.text = widget.NewMultiLineEntry()
 	e.text.SetPlaceHolder(configString("placeholder"))
 	e.status = widget.NewLabel(configString("empty"))
 	e.text.OnChanged = func(string) {
@@ -67,10 +67,8 @@ func main() {
 	keyboard := newKeyboard(languages[0], e.text)
 	rightToLeft := widget.NewCheck(configString("right_to_left"), nil)
 	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), appConfig.RTLDefault))
-	e.text.SetRightToLeft(rightToLeft.Checked)
 	rightToLeft.OnChanged = func(enabled bool) {
 		application.Preferences().SetBool(preferenceKey("right_to_left"), enabled)
-		e.text.SetRightToLeft(enabled)
 	}
 	languageSelect.OnChanged = func(name string) {
 		for _, lang := range languages {
@@ -94,10 +92,11 @@ func main() {
 			exitButton, nil),
 		container.NewBorder(nil, nil, widget.NewLabel(configString("language")), nil, languageSelect),
 	)
-	content := container.NewVSplit(e.text, keyboard)
+	content := container.NewVSplit(container.NewMax(e.text), keyboard)
 	preferences := application.Preferences()
 	content.SetOffset(preferences.FloatWithFallback(preferenceKey("split_offset"), configNumber("default_editor_fraction")))
 	window.SetContent(container.NewBorder(top, e.status, nil, nil, content))
+	window.Canvas().Focus(e.text)
 	stopSavingSplit := make(chan struct{})
 	window.SetOnClosed(func() {
 		preferences.SetFloat(preferenceKey("split_offset"), content.Offset)
@@ -121,11 +120,11 @@ type characterKeyboard struct {
 	widget.BaseWidget
 	list         *widget.List
 	chars        []rune
-	entry        *unicodeEditor
+	entry        *widget.Entry
 	languageName string
 }
 
-func newKeyboard(lang language, entry *unicodeEditor) *characterKeyboard {
+func newKeyboard(lang language, entry *widget.Entry) *characterKeyboard {
 	k := &characterKeyboard{entry: entry}
 	k.list = widget.NewList(
 		func() int { return (len(k.chars) + keyboardColumns() - 1) / keyboardColumns() },
@@ -148,8 +147,11 @@ func newKeyboard(lang language, entry *unicodeEditor) *characterKeyboard {
 				}
 				char := k.chars[index]
 				button.Show()
-				button.SetText(keyLabel(char) + configString("key_label_separator") + strings.TrimSpace(phoneticFor(k.languageName, char)))
+				button.SetText(keyboardKeyText(char, phoneticFor(k.languageName, char)))
 				button.OnTapped = func() {
+					if canvasForEditor := fyne.CurrentApp().Driver().CanvasForObject(k.entry); canvasForEditor != nil {
+						canvasForEditor.Focus(k.entry)
+					}
 					k.entry.TypedRune(char)
 				}
 			}
@@ -164,7 +166,7 @@ func (k *characterKeyboard) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(k.list)
 }
 
-func (k *characterKeyboard) SetList(lang language, entry *unicodeEditor) {
+func (k *characterKeyboard) SetList(lang language, entry *widget.Entry) {
 	k.entry = entry
 	k.languageName = lang.name
 	k.chars = charactersFor(lang)
@@ -179,6 +181,11 @@ func keyLabel(char rune) string {
 		return configString("combining_circle") + string(char)
 	}
 	return string(char)
+}
+
+func keyboardKeyText(char rune, pronunciation string) string {
+	return configString("left_to_right_mark") + keyLabel(char) +
+		configString("key_label_separator") + strings.TrimSpace(pronunciation)
 }
 
 func (e *editor) open() {
@@ -404,10 +411,9 @@ func (e *editor) showAbout() {
 	appName.TextSize = theme.Size(theme.SizeNameText) * float32(configNumber("about_name_font_multiplier"))
 	version := canvas.NewText(configString("about_version")+appConfig.Application.Version, theme.ForegroundColor())
 	version.TextSize = theme.Size(theme.SizeNameCaptionText)
-	version.Move(fyne.NewPos(0, theme.Size(theme.SizeNameCaptionText)*float32(configNumber("about_version_vertical_offset_factor"))))
-	versionHolder := container.NewWithoutLayout(version)
+	appDetails := container.NewVBox(appName, version)
 	details := container.NewVBox(
-		container.NewHBox(icon, appName, versionHolder),
+		container.NewHBox(icon, appDetails),
 		widget.NewLabel(appConfig.Application.Copyright),
 		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
 	)
