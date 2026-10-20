@@ -23,8 +23,6 @@ The bundled Unicode Script Fallback is a renamed, merged font containing Noto Av
 
 The language selector previews each script with a sample word or representative characters. Keyboard keys show the character and its pronunciation separated by spaces. Verified readings are currently bundled for Avesta, Ancient Persian, Parthian, and Pahlavi; other characters fall back to their hexadecimal code point rather than an asserted pronunciation. Right-click or long-press in the editor for mouse-based cut/copy/paste/select-all; standard keyboard shortcuts are also available. Save As shows Fyne's overwrite confirmation before replacing an existing file. If the document has unsaved changes, Exit or closing the window asks whether to save, discard, or cancel.
 
-The About dialog includes an Ethereum donation QR code and address.
-
 The keyboard occupies 70% of the window by default. Dragging the splitter changes the proportions, which are saved for the next run.
 
 ## Documents and fonts
