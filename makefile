@@ -101,10 +101,12 @@ linux-386:
         $(MAKE) package OS=linux ARCH=386
 
 # Windows
+WINDOWS_AMD64_CC ?= x86_64-w64-mingw32-gcc
+
 windows: windows-amd64
 
 windows-amd64:
-        GOOS=windows GOARCH=amd64 $(FYNE) package -os windows $(RELEASE_FLAG) $(META_FLAGS) $(FYNEFLAGS)
+        GOOS=windows GOARCH=amd64 CC="$(WINDOWS_AMD64_CC)" $(FYNE) package -os windows $(RELEASE_FLAG) $(META_FLAGS) $(FYNEFLAGS)
 
 windows-arm64:
         GOOS=windows GOARCH=arm64 $(FYNE) package -os windows $(RELEASE_FLAG) $(META_FLAGS) $(FYNEFLAGS)

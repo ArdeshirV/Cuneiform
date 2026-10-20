@@ -37,4 +37,12 @@ Startup settings and labels are embedded from `assets/app.json`; the ordered scr
 
 Wistaspa, Avesta, and `ave_bl_l4` are not included because their redistribution terms could not be verified. The bundled, freely licensed Noto Sans Avestan face provides Avestan Unicode coverage.
 
+## Please Donate!
+
+We truly appreciate and thank you for any donation you can give to our project.
+
+![Ethereum donation QR code](assets/ethereum-donation.png)
+
+Ethereum `0x6E6465394D14975956cd1BD37ab4E35F2C60300E`
+
 Copyright (c) 2026 @ArdeshirV
