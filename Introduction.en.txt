@@ -1,6 +1,6 @@
-## Introducing the Cuneiform Project
+## Introducing the Summer Avestan Editor Project
 
-**Cuneiform is a tool for writing and preserving texts in ancient scripts, particularly those associated with ancient Iran.** It allows you to type characters that are not available on ordinary keyboards and save them as digital text.
+**Summer Avestan Editor is a tool for writing and preserving texts in ancient scripts, particularly those associated with ancient Iran.** It allows you to type characters that are not available on ordinary keyboards and save them as digital text.
 
 Project repository: [github.com/ArdeshirV/cuneiform](https://github.com/ArdeshirV/cuneiform)
 
@@ -30,7 +30,7 @@ I would introduce it this way:
 >
 > Many ancient Iranian languages and scripts—from Avestan and Pahlavi to Old Persian cuneiform—are an essential part of our cultural heritage. Yet writing in these historical scripts is not easy with the tools we commonly use today.
 >
-> The Cuneiform project makes it possible for enthusiasts, researchers, and students to type these historical characters directly, compose their own texts, and preserve them digitally.
+> The Summer Avestan Editor project makes it possible for enthusiasts, researchers, and students to type these historical characters directly, compose their own texts, and preserve them digitally.
 >
 > Its purpose is to connect the written heritage of the past with the tools of the present, allowing these scripts to be used not only in museums and history books, but also on computers and mobile devices.
 
