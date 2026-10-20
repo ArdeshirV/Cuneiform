@@ -526,6 +526,7 @@ func (e *editor) showAbout() {
 		widget.NewSeparator(),
 		donationSection,
 		widget.NewSeparator(),
+		widget.NewLabel(configString("project_link_description")),
 		widget.NewHyperlink(appConfig.Application.ProjectURL, appConfig.Application.ProjectLink),
 	)
 	dialog.NewCustom(configString("about_dialog_title"), configString("close"), details, e.window).Show()
