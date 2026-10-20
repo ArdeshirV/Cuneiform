@@ -1,7 +1,7 @@
 {
   "application": {
     "id": "org.ardeshirv.cuneiform",
-    "name": "Cuneiform",
+    "name": "Avestan Editor",
     "version": "1.0",
     "icon": "Icon.png",
     "project_url": "https://github.com/ArdeshirV/cuneiform",
@@ -11,6 +11,7 @@
     "placeholder": "Open or start a Unicode text document…",
     "empty": "",
     "right_to_left": "Right to left",
+    "right_to_left_mark": "\u200F",
     "open": "Open",
     "save": "Save",
     "save_as": "Save As",
@@ -57,8 +58,8 @@
     "phonetic_space": "space",
     "phonetic_unknown_format": "%X",
     "language_sample_format": "%s — %s",
-    "key_label_separator": "/",
-    "left_to_right_mark": "\u200E",
+    "key_label_prefix": " ",
+    "key_label_separator": " ",
     "invalid_utf8_replacement": "�",
     "selection_highlight": "#75B5D170",
     "theme_variant_dark": "dark",
@@ -145,14 +146,6 @@
       "variant": "system"
     }
   },
-  "rtl_scripts": [
-    "Arabic",
-    "Hebrew",
-    "Syriac",
-    "Thaana",
-    "Nko",
-    "Adlam"
-  ],
   "excluded_unicode_scripts": [
     "Common",
     "Inherited"

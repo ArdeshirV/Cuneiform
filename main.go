@@ -33,6 +33,9 @@ type editor struct {
 	window      fyne.Window
 	text        *widget.Entry
 	status      *widget.Label
+	editorHost  *fyne.Container
+	keyboard    *characterKeyboard
+	rightToLeft bool
 	encoding    textEncoding
 	uri         fyne.URI
 	dirty       bool
@@ -52,28 +55,25 @@ func main() {
 
 	e := &editor{application: application, window: window, encoding: encodingUTF8}
 	e.applySettings()
-	e.text = widget.NewMultiLineEntry()
+	rightToLeft := widget.NewCheck(configString("right_to_left"), nil)
+	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), appConfig.RTLDefault))
+	e.rightToLeft = rightToLeft.Checked
+	e.text = newEditorEntry(e.rightToLeft)
 	e.text.SetPlaceHolder(configString("placeholder"))
-	e.status = widget.NewLabel(configString("empty"))
-	e.text.OnChanged = func(string) {
-		if !e.loading {
-			e.dirty = true
-		}
-		e.updateStatus()
+	e.bindTextEntry()
+	rightToLeft.OnChanged = func(enabled bool) {
+		application.Preferences().SetBool(preferenceKey("right_to_left"), enabled)
+		e.setTextDirection(enabled)
 	}
+	e.status = widget.NewLabel(configString("empty"))
 
 	languageSelect := widget.NewSelect(languageNames(), nil)
 	languageSelect.SetSelected(languageOptionName(languages[0]))
-	keyboard := newKeyboard(languages[0], e.text)
-	rightToLeft := widget.NewCheck(configString("right_to_left"), nil)
-	rightToLeft.SetChecked(application.Preferences().BoolWithFallback(preferenceKey("right_to_left"), appConfig.RTLDefault))
-	rightToLeft.OnChanged = func(enabled bool) {
-		application.Preferences().SetBool(preferenceKey("right_to_left"), enabled)
-	}
+	e.keyboard = newKeyboard(languages[0], e.text)
 	languageSelect.OnChanged = func(name string) {
 		for _, lang := range languages {
 			if languageOptionName(lang) == name {
-				keyboard.SetList(lang, e.text)
+				e.keyboard.SetList(lang, e.text)
 				break
 			}
 		}
@@ -82,17 +82,17 @@ func main() {
 	openButton := widget.NewButton(configString("open"), e.open)
 	saveButton := widget.NewButton(configString("save"), e.save)
 	saveAsButton := widget.NewButton(configString("save_as"), e.saveAs)
-	fontButton := widget.NewButton(configString("font"), e.showFontDialog)
 	settingsButton := widget.NewButton(configString("settings"), e.showSettingsDialog)
 	aboutButton := widget.NewButton(configString("about"), e.showAbout)
 	exitButton := widget.NewButton(configString("exit"), e.requestClose)
 	top := container.NewVBox(
 		container.NewBorder(nil, nil,
-			container.NewHBox(openButton, saveButton, saveAsButton, fontButton, settingsButton, aboutButton, rightToLeft),
+			container.NewHBox(openButton, saveButton, saveAsButton, settingsButton, aboutButton, rightToLeft),
 			exitButton, nil),
 		container.NewBorder(nil, nil, widget.NewLabel(configString("language")), nil, languageSelect),
 	)
-	content := container.NewVSplit(container.NewMax(e.text), keyboard)
+	e.editorHost = container.NewMax(e.text)
+	content := container.NewVSplit(e.editorHost, e.keyboard)
 	preferences := application.Preferences()
 	content.SetOffset(preferences.FloatWithFallback(preferenceKey("split_offset"), configNumber("default_editor_fraction")))
 	window.SetContent(container.NewBorder(top, e.status, nil, nil, content))
@@ -173,6 +173,10 @@ func (k *characterKeyboard) SetList(lang language, entry *widget.Entry) {
 	k.list.Refresh()
 }
 
+func (k *characterKeyboard) SetEntry(entry *widget.Entry) {
+	k.entry = entry
+}
+
 func keyLabel(char rune) string {
 	if char == ' ' {
 		return configString("space_key")
@@ -184,7 +188,7 @@ func keyLabel(char rune) string {
 }
 
 func keyboardKeyText(char rune, pronunciation string) string {
-	return configString("left_to_right_mark") + keyLabel(char) +
+	return configString("key_label_prefix") + keyLabel(char) +
 		configString("key_label_separator") + strings.TrimSpace(pronunciation)
 }
 
@@ -313,6 +317,80 @@ func (e *editor) updateStatus() {
 		name, marker, e.encoding, unicode.Version, utf8RuneCount(e.text.Text)))
 }
 
+func (e *editor) bindTextEntry() {
+	e.text.OnChanged = func(string) {
+		if !e.loading {
+			e.dirty = true
+		}
+		e.updateStatus()
+	}
+}
+
+func (e *editor) setTextDirection(rightToLeft bool) {
+	if e.rightToLeft == rightToLeft {
+		return
+	}
+
+	text := e.text.Text
+	row, column := e.text.CursorRow, e.text.CursorColumn
+	hadDirectionMark := false
+	if e.rightToLeft {
+		lines := strings.Split(text, "\n")
+		mark := configString("right_to_left_mark")
+		if row >= 0 && row < len(lines) {
+			hadDirectionMark = strings.HasPrefix(lines[row], mark)
+		}
+		text = stripEditorDirectionMarks(text)
+	}
+	if hadDirectionMark && column > 0 {
+		column--
+	}
+	entry := newEditorEntry(rightToLeft)
+	entry.SetPlaceHolder(configString("placeholder"))
+	e.loading = true
+	entry.SetText(text)
+	e.loading = false
+	entry.CursorRow, entry.CursorColumn = row, column
+	e.text = entry
+	e.rightToLeft = rightToLeft
+	e.bindTextEntry()
+	e.editorHost.Objects = []fyne.CanvasObject{entry}
+	e.editorHost.Refresh()
+	e.keyboard.SetEntry(entry)
+	if canvas := e.window.Canvas(); canvas != nil {
+		canvas.Focus(entry)
+	}
+}
+
+func newEditorEntry(rightToLeft bool) *widget.Entry {
+	style := widget.RichTextStyleInline
+	style.Alignment = editorTextAlignment(rightToLeft)
+	originalStyle := widget.RichTextStyleInline
+	widget.RichTextStyleInline = style
+	entry := widget.NewMultiLineEntry()
+	entry.Wrapping = fyne.TextWrapWord
+	entry.Scroll = fyne.ScrollVerticalOnly
+	entry.SetText(configString("empty"))
+	widget.RichTextStyleInline = originalStyle
+	return entry
+}
+
+func editorTextAlignment(rightToLeft bool) fyne.TextAlign {
+	if rightToLeft {
+		return fyne.TextAlignTrailing
+	}
+	return fyne.TextAlignLeading
+}
+
+func stripEditorDirectionMarks(text string) string {
+	mark := configString("right_to_left_mark")
+	lines := strings.Split(text, "\n")
+	for i := range lines {
+		lines[i] = strings.TrimPrefix(lines[i], mark)
+	}
+	return strings.Join(lines, "\n")
+}
+
 func (e *editor) applySettings() {
 	preferences := e.application.Preferences()
 	scaleChoice := preferences.StringWithFallback(preferenceKey("font_size"), configString("font_size_medium"))
@@ -393,6 +471,7 @@ func (e *editor) showSettingsDialog() {
 		themeSelection,
 		widget.NewLabel(configString("font_settings_label")),
 		sizeSelection,
+		widget.NewButton(configString("font"), e.showFontDialog),
 		widget.NewButton(configString("font_bundled_button"), func() {
 			preferences := e.application.Preferences()
 			preferences.SetString(preferenceKey("custom_font_name"), "")

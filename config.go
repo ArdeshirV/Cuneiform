@@ -31,7 +31,6 @@ type appConfiguration struct {
 	FontSizeOptions                   []string                `json:"font_size_options"`
 	ThemePalettes                     map[string]themePalette `json:"theme_palettes"`
 	RTLDefault                        bool                    `json:"right_to_left_default"`
-	RTLScripts                        []string                `json:"rtl_scripts"`
 	ExcludedScripts                   []string                `json:"excluded_unicode_scripts"`
 	LanguageNameReplacements          [][2]string             `json:"language_name_replacements"`
 	LanguageNormalizationReplacements [][2]string             `json:"language_normalization_replacements"`
